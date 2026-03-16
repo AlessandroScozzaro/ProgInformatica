@@ -85,9 +85,9 @@ Sistema Monitoraggio Ambientale
 
 <li class="nav-item dropdown no-arrow">
 <a class="nav-link dropdown-toggle" href="#">
-<span class="mr-2 d-none d-lg-inline text-gray-600 small">
+<a href="logout.php"><span class="mr-2 d-none d-lg-inline text-gray-600 small">
 Utente
-</span>
+</span></a>
 <img class="img-profile rounded-circle"
 src="img/undraw_profile.svg">
 </a>
@@ -102,6 +102,15 @@ src="img/undraw_profile.svg">
 <h1 class="h3 mb-4 text-gray-800">
 Dashboard Sensori Ambientali
 </h1>
+
+<div class="mb-4">
+<a href="notifiche.php" class="btn btn-info btn-icon-split">
+<span class="icon text-white-50">
+<i class="fas fa-bell"></i>
+</span>
+<span class="text">Visualizza notifiche</span>
+</a>
+</div>
 
 <div class="row">
 
