@@ -66,9 +66,9 @@ Sistema Monitoraggio Ambientale
 
 <li class="nav-item dropdown no-arrow">
 <a class="nav-link dropdown-toggle" href="#">
-<span class="mr-2 d-none d-lg-inline text-gray-600 small">
+<a href="logout.php"><span class="mr-2 d-none d-lg-inline text-gray-600 small">
 Utente
-</span>
+</span></a>
 <img class="img-profile rounded-circle"
 src="img/undraw_profile.svg">
 </a>

@@ -1,4 +1,6 @@
-```html
+<?php
+session_start();
+?>
 <!DOCTYPE html>
 <html lang="it">
 
@@ -98,7 +100,7 @@ event.preventDefault()
 let email = document.getElementById("exampleInputEmail").value
 let password = document.getElementById("exampleInputPassword").value
 
-if(email === "admin@email.com" && password === "1234"){
+if(email ===  && password === ){
 
 localStorage.setItem("logged","true")
 
