@@ -1,6 +1,15 @@
+<<<<<<< HEAD
     ```html
     <!DOCTYPE html>
     <html lang="it">
+=======
+<?php
+session_start();
+require_once 'lib/conn.php';
+?>
+<!DOCTYPE html>
+<html lang="it">
+>>>>>>> 952475e5957c3f19ca9976061a255bdeb93ae5f8
 
     <head>
 
@@ -40,6 +49,7 @@
     </h1>
     </div>
 
+<<<<<<< HEAD
     <form class="user" onsubmit="login(event)">
 
     <div class="form-group">
@@ -55,6 +65,23 @@
     id="exampleInputPassword"
     placeholder="Password">
     </div>
+=======
+<form method="post" action="auth.php">
+
+<div class="form-group">
+<input type="email"
+class="form-control form-control-user"
+placeholder="Inserisci email" 
+name="email" required>
+</div>
+
+<div class="form-group">
+<input type="password"
+class="form-control form-control-user"
+placeholder="Password" 
+name="password" required>
+</div>
+>>>>>>> 952475e5957c3f19ca9976061a255bdeb93ae5f8
 
     <button type="submit"
     class="btn btn-primary btn-user btn-block">
@@ -89,6 +116,7 @@
     <script src="vendor/jquery-easing/jquery.easing.min.js"></script>
     <script src="js/sb-admin-2.min.js"></script>
 
+<<<<<<< HEAD
     <script>
 
     function login(event){
@@ -115,6 +143,9 @@
     </script>
 
     </body>
+=======
+</body>
+>>>>>>> 952475e5957c3f19ca9976061a255bdeb93ae5f8
 
     </html>
     ```
