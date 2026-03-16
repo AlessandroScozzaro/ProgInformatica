@@ -102,7 +102,7 @@ if(email === "admin@email.com" && password === "1234"){
 
 localStorage.setItem("logged","true")
 
-window.location.href = "index.html"
+window.location.href = "index.php"
 
 }else{
 
