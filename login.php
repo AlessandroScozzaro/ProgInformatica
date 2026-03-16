@@ -1,5 +1,6 @@
 <?php
 session_start();
+require_once 'lib/conn.php';
 ?>
 <!DOCTYPE html>
 <html lang="it">
@@ -42,20 +43,20 @@ Accesso Sistema Monitoraggio Ambientale
 </h1>
 </div>
 
-<form class="user" onsubmit="login(event)">
+<form method="post" action="auth.php">
 
 <div class="form-group">
 <input type="email"
 class="form-control form-control-user"
-id="exampleInputEmail"
-placeholder="Inserisci email">
+placeholder="Inserisci email" 
+name="email" required>
 </div>
 
 <div class="form-group">
 <input type="password"
 class="form-control form-control-user"
-id="exampleInputPassword"
-placeholder="Password">
+placeholder="Password" 
+name="password" required>
 </div>
 
 <button type="submit"
@@ -90,31 +91,6 @@ Crea un account
 <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
 <script src="vendor/jquery-easing/jquery.easing.min.js"></script>
 <script src="js/sb-admin-2.min.js"></script>
-
-<script>
-
-function login(event){
-
-event.preventDefault()
-
-let email = document.getElementById("exampleInputEmail").value
-let password = document.getElementById("exampleInputPassword").value
-
-if(email ===  && password === ){
-
-localStorage.setItem("logged","true")
-
-window.location.href = "index.php"
-
-}else{
-
-alert("Email o password non corretti")
-
-}
-
-}
-
-</script>
 
 </body>
 
