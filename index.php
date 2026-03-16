@@ -66,6 +66,12 @@ window.location.href = "login.php"
 <span>Storico dati</span></a>
 </li>
 
+<li class="nav-item">
+<a class="nav-link" href="notifiche.php">
+<i class="fas fa-bell"></i>
+<span>Notifiche</span></a>
+</li>
+
 <hr class="sidebar-divider d-none d-md-block">
 
 </ul>
@@ -102,15 +108,6 @@ src="img/undraw_profile.svg">
 <h1 class="h3 mb-4 text-gray-800">
 Dashboard Sensori Ambientali
 </h1>
-
-<div class="mb-4">
-<a href="notifiche.php" class="btn btn-info btn-icon-split">
-<span class="icon text-white-50">
-<i class="fas fa-bell"></i>
-</span>
-<span class="text">Visualizza notifiche</span>
-</a>
-</div>
 
 <div class="row">
 
