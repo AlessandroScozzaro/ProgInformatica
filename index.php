@@ -40,9 +40,28 @@ window.location.href = "login.php"
 <i class="fas fa-fw fa-tachometer-alt"></i>
 <span>Dashboard</span></a>
 </li>
+<li class="nav-item">
+<a class="nav-link" href="stanze.php">
+<i class="fas fa-building"></i>
+<span>Gestione Stanze</span>
+</a>
+</li>
 
 <li class="nav-item">
-<a class="nav-link" href="#">
+<a class="nav-link" href="piantina.php">
+<i class="fas fa-map"></i>
+<span>Piantina</span>
+</a>
+</li>
+
+<li class="nav-item">
+<a class="nav-link" href="utenti.php">
+<i class="fas fa-users"></i>
+<span>Utenti</span>
+</a>
+</li>
+<li class="nav-item">
+<a class="nav-link" href="storico.php">
 <i class="fas fa-chart-line"></i>
 <span>Storico dati</span></a>
 </li>
