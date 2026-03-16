@@ -7,6 +7,7 @@ session_start();
 if (!isset($_SESSION['user_id'])) {
     header('Location: login.php');
     exit();
+}
 
 // Connessione al database
 require_once 'lib/conn.php'; // Assicurati che questo file contenga la connessione PDO $pdo
@@ -132,3 +133,4 @@ $pdo->prepare("UPDATE notifiche SET letto = 1 WHERE utente_id = :user_id AND let
 <script src="js/sb-admin-2.min.js"></script>
 </body>
 </html>
+
