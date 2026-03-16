@@ -84,6 +84,15 @@ src="img/undraw_profile.svg">
 Dashboard Sensori Ambientali
 </h1>
 
+<div class="mb-4">
+<a href="notifiche.php" class="btn btn-info btn-icon-split">
+<span class="icon text-white-50">
+<i class="fas fa-bell"></i>
+</span>
+<span class="text">Visualizza notifiche</span>
+</a>
+</div>
+
 <div class="row">
 
 <!-- Temperatura -->
