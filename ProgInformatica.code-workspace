@@ -1,0 +1,20 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../../../../../xampp/htdocs/startbootstrap-sb-admin-2-gh-pages/startbootstrap-sb-admin-2-gh-pages/css"
+		},
+		{
+			"path": "../../../../../xampp/htdocs/startbootstrap-sb-admin-2-gh-pages/startbootstrap-sb-admin-2-gh-pages/img"
+		},
+		{
+			"path": "../../../../../xampp/htdocs/startbootstrap-sb-admin-2-gh-pages/startbootstrap-sb-admin-2-gh-pages/js"
+		},
+		{
+			"path": "../../../../../xampp/htdocs/startbootstrap-sb-admin-2-gh-pages/startbootstrap-sb-admin-2-gh-pages/vendor"
+		}
+	],
+	"settings": {}
+}
