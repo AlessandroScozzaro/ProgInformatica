@@ -1,21 +1,20 @@
 <?php
-session_start();
-if (!isset($_SESSION['id'])) {
-    header('Location: login.php');
-    exit();
-}
+require_once 'lib/conn.php';
+
+// Prendo tutte le stanze
+$stmt = $conn->query("SELECT * FROM stanze");
+$stanze = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
+
 <!DOCTYPE html>
 <html lang="it">
 
 <head>
-
 <meta charset="utf-8">
 <title>Gestione Stanze</title>
 
 <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet">
 <link href="css/sb-admin-2.min.css" rel="stylesheet">
-
 </head>
 
 <body>
@@ -38,37 +37,26 @@ Elenco Stanze
 
 <tr>
 <th>Nome stanza</th>
-<th>Lunghezza</th>
-<th>Larghezza</th>
-<th>Altezza</th>
-<th>Volume</th>
+<th>Volume (m³)</th>
 </tr>
 
+<?php foreach($stanze as $s): ?>
 <tr>
-<td>Laboratorio</td>
-<td>5 m</td>
-<td>4 m</td>
-<td>3 m</td>
-<td>60 m³</td>
+<td><?= htmlspecialchars($s['nome']) ?></td>
+<td><?= $s['volumetria'] ?> m³</td>
 </tr>
-
-<tr>
-<td>Ufficio</td>
-<td>4 m</td>
-<td>3 m</td>
-<td>3 m</td>
-<td>36 m³</td>
-</tr>
-
-<tr>
-<td>Magazzino</td>
-<td>6 m</td>
-<td>5 m</td>
-<td>4 m</td>
-<td>120 m³</td>
-</tr>
+<?php endforeach; ?>
 
 </table>
+
+</div>
+
+</div>
+
+</div>
+
+</body>
+</html>
 
 </div>
 
