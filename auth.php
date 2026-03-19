@@ -8,10 +8,9 @@ $stmt->bindParam(':email', $email);
 $stmt->bindParam(':password', $password);
 $stmt->execute();
 $stmt->setFetchMode(PDO::FETCH_ASSOC);
-$row = $stmt->fetch();
 if($stmt->rowCount() > 0){
-    $_SESSION['id'] = $row['id'];
-    $_SESSION['ruolo'] = $row['ruolo'];
+    $_SESSION['id'] = $stmt->fetch()['id_utente'];
+    $_SESSION['ruolo'] = $stmt->fetch()['ruolo'];
     header("Location: index.php");
     exit();
 } else {
