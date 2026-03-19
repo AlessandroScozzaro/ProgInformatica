@@ -1,10 +1,6 @@
 <?php
 session_start();
 require_once 'lib/conn.php';
-if(!isset($_SESSION['id'])){
-    header("Location: login.php");
-    exit();
-}
 ?>
 <!DOCTYPE html>
 <html lang="it">
