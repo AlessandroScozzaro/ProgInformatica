@@ -2,7 +2,7 @@
 session_start();
 
 // Controllo login
-if (!isset($_SESSION['id_utente'])) {
+if (!isset($_SESSION['id'])) {
     header('Location: login.php');
     exit();
 }
@@ -10,7 +10,7 @@ if (!isset($_SESSION['id_utente'])) {
 // Connessione DB
 require_once 'lib/conn.php';
 
-$id_utente = $_SESSION['id_utente'];
+$id_utente = $_SESSION['id'];
 
 // Query con JOIN per avere più informazioni
 $stmt = $pdo->prepare("
