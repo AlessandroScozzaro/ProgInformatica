@@ -1,40 +1,55 @@
 <?php
-
 session_start();
+
+// Controllo login
 if (!isset($_SESSION['id'])) {
     header('Location: login.php');
     exit();
 }
 
-// Connessione al database
-require_once 'lib/conn.php'; // Assicurati che questo file contenga la connessione PDO $pdo
+// Connessione DB
+require_once 'lib/conn.php';
 
-$user_id = $_SESSION['user_id'];
+$id_utente = $_SESSION['id'];
 
-// Recupera le notifiche dell'utente
-$stmt = $pdo->prepare("SELECT id, messaggio, letto, data_creazione FROM notifiche WHERE utente_id = :user_id ORDER BY data_creazione DESC");
-$stmt->execute(['user_id' => $user_id]);
+// Query con JOIN per avere più informazioni
+$stmt = $pdo->prepare("
+    SELECT 
+        n.id_notifica,
+        n.testo,
+        n.tipo_notifica,
+        n.timestamp_invio,
+        e.dettagli,
+        d.nome AS dispositivo
+    FROM notifiche n
+    JOIN eventi e ON n.id_evento = e.id_evento
+    JOIN dispositivi d ON e.id_dispositivo = d.id_dispositivo
+    WHERE n.id_utente = :id_utente
+    ORDER BY n.timestamp_invio DESC
+");
+
+$stmt->execute(['id_utente' => $id_utente]);
 $notifiche = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-// Segna tutte le notifiche come lette
-$pdo->prepare("UPDATE notifiche SET letto = 1 WHERE utente_id = :user_id AND letto = 0")->execute(['user_id' => $user_id]);
 ?>
+
 <!DOCTYPE html>
 <html lang="it">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Notifiche - Monitoraggio Ambientale</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifiche</title>
+
     <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet">
     <link href="css/sb-admin-2.min.css" rel="stylesheet">
 </head>
+
 <body id="page-top">
 
 <div id="wrapper">
 
     <!-- Sidebar -->
-    <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+    <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion">
 
         <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.php">
             <div class="sidebar-brand-icon">
@@ -47,7 +62,7 @@ $pdo->prepare("UPDATE notifiche SET letto = 1 WHERE utente_id = :user_id AND let
 
         <li class="nav-item">
             <a class="nav-link" href="index.php">
-                <i class="fas fa-fw fa-tachometer-alt"></i>
+                <i class="fas fa-tachometer-alt"></i>
                 <span>Dashboard</span>
             </a>
         </li>
@@ -59,64 +74,91 @@ $pdo->prepare("UPDATE notifiche SET letto = 1 WHERE utente_id = :user_id AND let
             </a>
         </li>
 
-        <hr class="sidebar-divider d-none d-md-block">
     </ul>
 
+    <!-- Content -->
     <div id="content-wrapper" class="d-flex flex-column">
         <div id="content">
 
             <!-- Topbar -->
             <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 shadow">
-                <h5 class="m-0 font-weight-bold text-primary">Sistema Monitoraggio Ambientale</h5>
-                <ul class="navbar-nav ml-auto">
-                    <li class="nav-item dropdown no-arrow">
-                        <a class="nav-link dropdown-toggle" href="#">
-                            <span class="mr-2 d-none d-lg-inline text-gray-600 small">Utente</span>
-                            <img class="img-profile rounded-circle" src="img/undraw_profile.svg">
-                        </a>
-                    </li>
-                </ul>
+                <h5 class="m-0 font-weight-bold text-primary">
+                    Sistema Monitoraggio Ambientale
+                </h5>
             </nav>
 
+            <!-- Container -->
             <div class="container-fluid">
+
                 <div class="d-sm-flex align-items-center justify-content-between mb-4">
-                    <h1 class="h3 mb-0 text-gray-800">Notifiche</h1>
-                    <a href="index.php" class="btn btn-sm btn-primary"><i class="fas fa-home fa-sm fa-fw"></i> Home</a>
+                    <h1 class="h3 text-gray-800">Notifiche</h1>
+                    <a href="index.php" class="btn btn-primary btn-sm">
+                        <i class="fas fa-home"></i> Home
+                    </a>
                 </div>
 
-                <div class="row">
-                    <div class="col-xl-12 col-lg-12">
-                        <div class="card shadow mb-4">
-                            <div class="card-header py-3">
-                                <h6 class="m-0 font-weight-bold text-primary">Ultime notifiche</h6>
+                <!-- Card -->
+                <div class="card shadow mb-4">
+                    <div class="card-header">
+                        <h6 class="m-0 font-weight-bold text-primary">
+                            Storico notifiche
+                        </h6>
+                    </div>
+
+                    <div class="card-body">
+
+                        <?php if (empty($notifiche)): ?>
+                            <div class="alert alert-info">
+                                Nessuna notifica trovata.
                             </div>
-                            <div class="card-body">
-                                <?php if (empty($notifiche)): ?>
-                                    <div class="alert alert-info">Non hai notifiche.</div>
-                                <?php else: ?>
-                                    <div class="list-group">
-                                        <?php foreach ($notifiche as $notifica): ?>
-                                            <a href="#" class="list-group-item list-group-item-action <?= $notifica['letto'] ? '' : 'font-weight-bold' ?>">
-                                                <?= htmlspecialchars($notifica['messaggio']) ?>
-                                                <span class="small text-muted float-right"><?= date('d/m/Y H:i', strtotime($notifica['data_creazione'])) ?></span>
-                                            </a>
-                                        <?php endforeach; ?>
+                        <?php else: ?>
+
+                            <div class="list-group">
+
+                                <?php foreach ($notifiche as $n): ?>
+
+                                    <div class="list-group-item">
+
+                                        <div class="d-flex justify-content-between">
+                                            <strong>
+                                                <?= htmlspecialchars($n['testo']) ?>
+                                            </strong>
+
+                                            <small>
+                                                <?= date('d/m/Y H:i', strtotime($n['timestamp_invio'])) ?>
+                                            </small>
+                                        </div>
+
+                                        <div class="mt-2 text-muted">
+                                            Dispositivo: <?= htmlspecialchars($n['dispositivo']) ?>
+                                        </div>
+
+                                        <div class="text-muted">
+                                            Tipo: <?= htmlspecialchars($n['tipo_notifica']) ?>
+                                        </div>
+
+                                        <div class="text-muted small">
+                                            Evento: <?= htmlspecialchars($n['dettagli']) ?>
+                                        </div>
+
                                     </div>
-                                <?php endif; ?>
+
+                                <?php endforeach; ?>
+
                             </div>
-                        </div>
+
+                        <?php endif; ?>
+
                     </div>
                 </div>
 
             </div>
-
         </div>
 
+        <!-- Footer -->
         <footer class="sticky-footer bg-white">
-            <div class="container my-auto">
-                <div class="copyright text-center my-auto">
-                    <span>Progetto Monitoraggio Ambientale - 2026</span>
-                </div>
+            <div class="container text-center">
+                <span>Progetto Monitoraggio Ambientale - 2026</span>
             </div>
         </footer>
 
@@ -126,8 +168,7 @@ $pdo->prepare("UPDATE notifiche SET letto = 1 WHERE utente_id = :user_id AND let
 
 <script src="vendor/jquery/jquery.min.js"></script>
 <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-<script src="vendor/chart.js/Chart.min.js"></script>
 <script src="js/sb-admin-2.min.js"></script>
+
 </body>
 </html>
-
