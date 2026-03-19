@@ -3,7 +3,7 @@ session_start();
 require_once 'lib/conn.php';
 $email = $_POST['email'];
 $password = $_POST['password'];
-$stmt = $conn->prepare("SELECT id, ruolo FROM utenti WHERE email = :email AND password = :password");
+$stmt = $conn->prepare("SELECT id_utente, ruolo FROM utenti WHERE email = :email AND password = :password");
 $stmt->bindParam(':email', $email);
 $stmt->bindParam(':password', $password);
 $stmt->execute();
