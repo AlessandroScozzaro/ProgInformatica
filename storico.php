@@ -115,7 +115,7 @@ try {
                                 <thead>
                                     <tr>
                                         <th>ID Misurazione</th>
-                                        <th>ID Dispositivo</th>
+                                        <th>Dispositivo</th>
                                         <th>Valore</th>
                                         <th>Data/Ora</th>
                                     </tr>
