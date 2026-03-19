@@ -1,9 +1,3 @@
-<script>
-if(localStorage.getItem("logged") !== "true"){
-window.location.href = "login.php"
-}
-</script>
-
 <!DOCTYPE html>
 <html lang="it">
 
