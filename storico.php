@@ -1,5 +1,5 @@
 <?php
-$conn = new mysqli("localhost","root","mysql","monitoraggio");
+$conn = new mysqli("localhost","root","mysql","prog_informatica");
 
 $res=$conn->query("SELECT * FROM dati_sensori ORDER BY data DESC");
 ?>
