@@ -28,7 +28,9 @@ Piantina Stanze
 </h1>
 
 <div class="card shadow mb-4">
-
+<div class="card-header bg-primary text-white">
+    <h6 class="m-0 font-weight-bold">Piantina Stanze</h6>
+</div>
 <div class="card-body">
 
 <canvas id="mappa" width="600" height="400" style="border:1px solid #ccc;"></canvas>
