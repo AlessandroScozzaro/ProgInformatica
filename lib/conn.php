@@ -1,5 +1,7 @@
 <?php
-$dbname = "prog_inf";
+
+$dbname = "progInf";
+
 $host = "127.0.0.1";
 $username = "root";
 $password = "mysql";
