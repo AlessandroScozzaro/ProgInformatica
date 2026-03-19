@@ -1,10 +1,7 @@
 <?php
-// notifiche.php
 
 session_start();
-
-// Controllo autenticazione utente
-if (!isset($_SESSION['user_id'])) {
+if (!isset($_SESSION['id'])) {
     header('Location: login.php');
     exit();
 }

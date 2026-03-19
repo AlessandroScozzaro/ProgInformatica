@@ -1,8 +1,10 @@
-<script>
-if(localStorage.getItem("logged") !== "true"){
-window.location.href = "login.php"
+<?php
+session_start();
+if (!isset($_SESSION['id'])) {
+    header('Location: login.php');
+    exit();
 }
-</script>
+?>
 
 <!DOCTYPE html>
 <html lang="it">

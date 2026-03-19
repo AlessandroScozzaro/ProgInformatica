@@ -1,5 +1,10 @@
-
-
+<?php
+session_start();
+if (!isset($_SESSION['id'])) {
+    header('Location: login.php');
+    exit();
+}
+?>
 <!DOCTYPE html>
 <html lang="it">
 
@@ -25,33 +30,6 @@ Utenti e Contatti
 
 <div class="card-body">
 
-<table class="table table-bordered">
-
-<tr>
-<th>Nome</th>
-<th>Email</th>
-<th>Telefono</th>
-</tr>
-
-<tr>
-<td>Mario Rossi</td>
-<td>mario@email.com</td>
-<td>333123456</td>
-</tr>
-
-<tr>
-<td>Luca Bianchi</td>
-<td>luca@email.com</td>
-<td>345987654</td>
-</tr>
-
-<tr>
-<td>Anna Verdi</td>
-<td>anna@email.com</td>
-<td>320111222</td>
-</tr>
-
-</table>
 
 </div>
 
