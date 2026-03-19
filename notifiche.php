@@ -12,8 +12,9 @@ require_once 'lib/conn.php';
 
 $id_utente = $_SESSION['id'];
 
+
 // Query con JOIN per avere più informazioni
-$stmt = $pdo->prepare("
+$stmt = $conn->prepare("
     SELECT 
         n.id_notifica,
         n.testo,
