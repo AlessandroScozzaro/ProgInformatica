@@ -1,8 +1,8 @@
 <?php
-session_destroy();
+session_start()
 ?>
 <html>
     <p>Vuoi disconnetterti?</p>
-    <a class="btn btn-primary" href="login.php" role="button">Sì</a>
-    <a class="btn btn-secondary" href="index.php" role="button">No</a>
+    <button href="login.php" role="button">OK</button>
+    <button href="index.php" role="button">Cancel</button>
 </html>
