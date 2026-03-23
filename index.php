@@ -10,34 +10,37 @@ if(!isset($_SESSION['id'])){
 // --- PRENDI DATI DAL DATABASE ---
 
 // Temperatura
-$temp = $conn->query("
+$tempResult = $conn->query("
 SELECT m.valore 
 FROM misurazioni m
 JOIN dispositivi d ON m.id_dispositivo = d.id_dispositivo
 WHERE d.nome LIKE '%temperatura%'
 ORDER BY m.timestamp DESC
 LIMIT 1
-")->fetch();
+");
+$temp = $tempResult ? $tempResult->fetch() : null;
 
 // Umidità
-$um = $conn->query("
+$umResult = $conn->query("
 SELECT m.valore 
 FROM misurazioni m
 JOIN dispositivi d ON m.id_dispositivo = d.id_dispositivo
 WHERE d.nome LIKE '%umidità%'
 ORDER BY m.timestamp DESC
 LIMIT 1
-")->fetch();
+");
+$um = $umResult ? $umResult->fetch() : null;
 
 // Qualità aria
-$aria = $conn->query("
+$ariaResult = $conn->query("
 SELECT m.valore 
 FROM misurazioni m
 JOIN dispositivi d ON m.id_dispositivo = d.id_dispositivo
 WHERE d.nome LIKE '%aria%'
 ORDER BY m.timestamp DESC
 LIMIT 1
-")->fetch();
+");
+$aria = $ariaResult ? $ariaResult->fetch() : null;
 
 // Stato qualità aria
 $valAria = $aria['valore'] ?? 0;
@@ -58,12 +61,18 @@ SELECT m.valore, m.timestamp
 FROM misurazioni m
 JOIN dispositivi d ON m.id_dispositivo = d.id_dispositivo
 WHERE d.nome LIKE '%aria%'
-ORDER BY m.timestamp ASC
+ORDER BY m.timestamp DESC
+LIMIT 100
 ");
 
 $valori = [];
 $labels = [];
-foreach($dati as $d){
+// Fetch query results into array
+$datiArr = $dati ? $dati->fetchAll() : [];
+// Reverse the array to maintain chronological order since we used DESC in the query
+$datiArr = array_reverse($datiArr);
+
+foreach($datiArr as $d){
     $valori[] = $d['valore'];
     $labels[] = date("H:i", strtotime($d['timestamp']));
 }
@@ -188,7 +197,15 @@ foreach($dati as $d){
 <h6 class="m-0 font-weight-bold text-primary">Andamento qualità aria (MQ135)</h6>
 </div>
 <div class="card-body">
-<canvas id="airChart"></canvas>
+<?php if (empty($valori)): ?>
+    <div class="text-center text-muted" style="height: 400px; display: flex; align-items: center; justify-content: center;">
+        Nessun dato disponibile per il grafico.
+    </div>
+<?php else: ?>
+    <div style="position: relative; height: 400px; width: 100%;">
+        <canvas id="airChart"></canvas>
+    </div>
+<?php endif; ?>
 </div>
 </div>
 </div>
@@ -206,30 +223,48 @@ foreach($dati as $d){
 </footer>
 
 </div>
-</div>
-
 <script src="vendor/jquery/jquery.min.js"></script>
 <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-<script src="vendor/chart.js/Chart.min.js"></script>
-
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-var ctx = document.getElementById("airChart");
-new Chart(ctx, {
-    type: 'line',
-    data: {
-        labels: <?= json_encode($labels) ?>,
-        datasets: [{
-            label: "Qualità aria (ppm)",
-            data: <?= json_encode($valori) ?>,
-            borderColor: "#1cc88a",
-            fill: false
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false
+<?php if (!empty($valori)): ?>
+document.addEventListener("DOMContentLoaded", function() {
+    var canvasElement = document.getElementById("airChart");
+    if (canvasElement) {
+        var ctx = canvasElement.getContext("2d");
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: <?= json_encode($labels) ?>,
+                datasets: [{
+                    label: "Qualità aria (ppm)",
+                    data: <?= json_encode($valori) ?>,
+                    borderColor: "#1cc88a",
+                    backgroundColor: "rgba(28, 200, 138, 0.1)",
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: "#1cc88a"
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 500
+                    }
+                }
+            }
+        });
     }
 });
+<?php endif; ?>
 </script>
 
 </body>
