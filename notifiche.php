@@ -31,6 +31,47 @@ $stmt = $conn->prepare("
 
 $stmt->execute(['id_utente' => $id_utente]);
 $notifiche = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+
+
+$apiToken = "7695027367:AAERhDILV39iPRRoVO3Ecpv3R2FIdlgLQXQ";
+$chatId = "-5171557407"; // Può essere un utente, gruppo o canale
+$_SESSION['telegram_chat_id'] ?? '';
+// Funzione per inviare un messaggio Telegram
+function sendTelegramMessage($chatId, $message, $apiToken) {
+    $url = "https://api.telegram.org/bot$apiToken/sendMessage";
+
+    $data = [
+        'chat_id' => $chatId,
+        'text' => $message
+    ];
+
+    $options = [
+        'http' => [
+            'header'  => "Content-Type: application/x-www-form-urlencoded\r\n",
+            'method'  => 'POST',
+            'content' => http_build_query($data),
+        ],
+    ];
+
+    $context  = stream_context_create($options);
+    file_get_contents($url, false, $context);
+}
+
+//triggeriamo l'invio del messaggio Telegram per ogni notifica
+foreach ($notifiche as $n) {
+    $message = "Nuova notifica: " . $n['testo'] . "\n" .
+               "Dispositivo: " . $n['dispositivo'] . "\n" .
+               "Tipo: " . $n['tipo_notifica'] . "\n" .
+               "Evento: " . $n['dettagli'] . "\n" .
+               "Inviata il: " . date('d/m/Y H:i', strtotime($n['timestamp_invio']));
+
+    sendTelegramMessage($chatId, $message, $apiToken);
+}
+
+
+
+
 ?>
 
 <!DOCTYPE html>
@@ -46,6 +87,7 @@ $notifiche = $stmt->fetchAll(PDO::FETCH_ASSOC);
 </head>
 
 <body id="page-top">
+
 
 <div id="wrapper">
 
