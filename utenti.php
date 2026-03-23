@@ -154,7 +154,7 @@ try {
                                             <!-- Immagine -->
                                             <td>
                                                 <?php if($u['immagine_profilo']): ?>
-                                                    <img src="ProgInformatica/<?= $u['immagine_profilo'] ?>" 
+                                                    <img src="PROGINFORMATICA<?= $u['immagine_profilo'] ?>" 
                                                          width="40" height="40"
                                                          style="border-radius:50%;">
                                                 <?php else: ?>
