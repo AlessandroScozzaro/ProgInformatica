@@ -11,7 +11,7 @@ if (!isset($_SESSION['id'])) {
 require_once 'lib/conn.php';
 
 $id_utente = $_SESSION['id'];
-
+ // https://t.me/+g6FqpxXHuQQxNWU0
 
 // Query con JOIN per avere più informazioni
 $stmt = $conn->prepare("
