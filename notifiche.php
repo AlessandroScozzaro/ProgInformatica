@@ -154,6 +154,12 @@ if (!empty($recentNotifiche)) {
                 <span>Aggiungi Dispositivo</span>
             </a>
         </li>
+        <li class="nav-item">
+            <a class="nav-link" href="misurazioni.php">
+                <i class="fas fa-chart-bar"></i>
+                <span>Misurazioni</span>
+            </a>
+        </li>
 
         <hr class="sidebar-divider d-none d-md-block">
 

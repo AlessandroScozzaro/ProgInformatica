@@ -96,6 +96,12 @@ try {
                 <span>Aggiungi Dispositivo</span>
             </a>
         </li>
+        <li class="nav-item">
+            <a class="nav-link" href="misurazioni.php">
+                <i class="fas fa-chart-bar"></i>
+                <span>Misurazioni</span>
+            </a>
+        </li>
 
         <hr class="sidebar-divider d-none d-md-block">
     </ul>
@@ -111,10 +117,11 @@ try {
                 </h5>
 
                 <ul class="navbar-nav ml-auto">
-
-                    <li class="nav-item">
-                        <a href="logout.php" class="btn btn-sm btn-danger">Logout</a>
-
+                    <li class="nav-item dropdown no-arrow">
+                        <a class="nav-link dropdown-toggle" href="#">
+                            <a href="logout.php"><span class="mr-2 d-none d-lg-inline text-gray-600 small">Utente</span></a>
+                            <i class="fas fa-user-circle fa-2x text-gray-300"></i>
+                        </a>
                     </li>
                 </ul>
             </nav>
