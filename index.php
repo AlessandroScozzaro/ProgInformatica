@@ -1,4 +1,4 @@
-<?php
+<?php 
 session_start();
 require_once 'lib/conn.php';
 
@@ -7,42 +7,35 @@ if(!isset($_SESSION['id'])){
     exit();
 }
 
-// --- PRENDI DATI DAL DATABASE ---
-
-// Temperatura
-$tempResult = $conn->query("
+// --- DATI SINGOLI (CARD) ---
+$temp = $conn->query("
 SELECT m.valore 
 FROM misurazioni m
 JOIN dispositivi d ON m.id_dispositivo = d.id_dispositivo
 WHERE d.nome LIKE '%temperatura%'
 ORDER BY m.timestamp DESC
 LIMIT 1
-");
-$temp = $tempResult ? $tempResult->fetch() : null;
+")->fetch();
 
-// Umidità
-$umResult = $conn->query("
+$um = $conn->query("
 SELECT m.valore 
 FROM misurazioni m
 JOIN dispositivi d ON m.id_dispositivo = d.id_dispositivo
 WHERE d.nome LIKE '%umidità%'
 ORDER BY m.timestamp DESC
 LIMIT 1
-");
-$um = $umResult ? $umResult->fetch() : null;
+")->fetch();
 
-// Qualità aria
-$ariaResult = $conn->query("
+$aria = $conn->query("
 SELECT m.valore 
 FROM misurazioni m
 JOIN dispositivi d ON m.id_dispositivo = d.id_dispositivo
 WHERE d.nome LIKE '%aria%'
 ORDER BY m.timestamp DESC
 LIMIT 1
-");
-$aria = $ariaResult ? $ariaResult->fetch() : null;
+")->fetch();
 
-// Stato qualità aria
+// Stato aria
 $valAria = $aria['valore'] ?? 0;
 if($valAria < 50){
     $stato = "Buona";
@@ -55,40 +48,67 @@ if($valAria < 50){
     $colore = "danger";
 }
 
-// Dati grafico qualità aria (ord. crescente)
-$dati = $conn->query("
-SELECT m.valore, m.timestamp
+// --- DATI GRAFICO TEMPERATURA ---
+$tempData = $conn->query("
+SELECT m.valore, m.timestamp 
+FROM misurazioni m
+JOIN dispositivi d ON m.id_dispositivo = d.id_dispositivo
+WHERE d.nome LIKE '%temperatura%'
+ORDER BY m.timestamp ASC
+LIMIT 100
+")->fetchAll(PDO::FETCH_ASSOC);
+
+$tempLabels = [];
+$tempValues = [];
+foreach($tempData as $d){
+    $tempLabels[] = date("H:i", strtotime($d['timestamp']));
+    $tempValues[] = $d['valore'];
+}
+
+// --- DATI GRAFICO UMIDITÀ ---
+$umData = $conn->query("
+SELECT m.valore, m.timestamp 
+FROM misurazioni m
+JOIN dispositivi d ON m.id_dispositivo = d.id_dispositivo
+WHERE d.nome LIKE '%umidità%'
+ORDER BY m.timestamp ASC
+LIMIT 100
+")->fetchAll(PDO::FETCH_ASSOC);
+
+$umLabels = [];
+$umValues = [];
+foreach($umData as $d){
+    $umLabels[] = date("H:i", strtotime($d['timestamp']));
+    $umValues[] = $d['valore'];
+}
+
+// --- DATI GRAFICO ARIA ---
+$ariaData = $conn->query("
+SELECT m.valore, m.timestamp 
 FROM misurazioni m
 JOIN dispositivi d ON m.id_dispositivo = d.id_dispositivo
 WHERE d.nome LIKE '%aria%'
-ORDER BY m.timestamp DESC
+ORDER BY m.timestamp ASC
 LIMIT 100
-");
+")->fetchAll(PDO::FETCH_ASSOC);
 
-$valori = [];
-$labels = [];
-// Fetch query results into array
-$datiArr = $dati ? $dati->fetchAll() : [];
-// Reverse the array to maintain chronological order since we used DESC in the query
-$datiArr = array_reverse($datiArr);
-
-foreach($datiArr as $d){
-    $valori[] = $d['valore'];
-    $labels[] = date("H:i", strtotime($d['timestamp']));
+$ariaLabels = [];
+$ariaValues = [];
+foreach($ariaData as $d){
+    $ariaLabels[] = date("H:i", strtotime($d['timestamp']));
+    $ariaValues[] = $d['valore'];
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="it">
-
 <head>
 <meta charset="utf-8">
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Dashboard Monitoraggio Ambientale</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard Sensori</title>
 <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet">
 <link href="css/sb-admin-2.min.css" rel="stylesheet">
 </head>
-
 <body id="page-top">
 <div id="wrapper">
 
@@ -99,7 +119,7 @@ foreach($datiArr as $d){
         <div class="sidebar-brand-text mx-3">Monitor Aria</div>
     </a>
     <hr class="sidebar-divider">
-    <li class="nav-item active"><a class="nav-link" href="#"><i class="fas fa-fw fa-tachometer-alt"></i><span>Dashboard</span></a></li>
+    <li class="nav-item active"><a class="nav-link" href="index.php"><i class="fas fa-fw fa-tachometer-alt"></i><span>Dashboard</span></a></li>
     <li class="nav-item"><a class="nav-link" href="stanze.php"><i class="fas fa-building"></i><span>Gestione Stanze</span></a></li>
     <li class="nav-item"><a class="nav-link" href="piantina.php"><i class="fas fa-map"></i><span>Piantina</span></a></li>
     <li class="nav-item"><a class="nav-link" href="utenti.php"><i class="fas fa-users"></i><span>Utenti</span></a></li>
@@ -116,103 +136,26 @@ foreach($datiArr as $d){
 <!-- Topbar -->
 <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 shadow">
     <h5 class="m-0 font-weight-bold text-primary">Sistema Monitoraggio Ambientale</h5>
-    <ul class="navbar-nav ml-auto">
-        <li class="nav-item dropdown no-arrow">
-            <a class="nav-link dropdown-toggle" href="#">
-                <a href="logout.php"><span class="mr-2 d-none d-lg-inline text-gray-600 small">Utente</span></a>
-                <img class="img-profile rounded-circle" src="img/undraw_profile.svg">
-            </a>
-        </li>
-    </ul>
 </nav>
 
 <div class="container-fluid">
-<h1 class="h3 mb-4 text-gray-800">Dashboard Sensori Ambientali</h1>
-<div class="row">
-
-<!-- Temperatura -->
-<div class="col-xl-3 col-md-6 mb-4">
-<div class="card border-left-danger shadow h-100 py-2">
-<div class="card-body">
-<div class="row no-gutters align-items-center">
-<div class="col mr-2">
-<div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Temperatura</div>
-<div class="h5 mb-0 font-weight-bold text-gray-800"><?= htmlspecialchars($temp['valore'] ?? '--') ?> °C</div>
-</div>
-<div class="col-auto"><i class="fas fa-thermometer-half fa-2x text-gray-300"></i></div>
-</div>
-</div>
-</div>
-</div>
-
-<!-- Umidità -->
-<div class="col-xl-3 col-md-6 mb-4">
-<div class="card border-left-primary shadow h-100 py-2">
-<div class="card-body">
-<div class="row no-gutters align-items-center">
-<div class="col mr-2">
-<div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Umidità</div>
-<div class="h5 mb-0 font-weight-bold text-gray-800"><?= htmlspecialchars($um['valore'] ?? '--') ?> %</div>
-</div>
-<div class="col-auto"><i class="fas fa-tint fa-2x text-gray-300"></i></div>
-</div>
-</div>
-</div>
-</div>
-
-<!-- Qualità aria -->
-<div class="col-xl-3 col-md-6 mb-4">
-<div class="card border-left-success shadow h-100 py-2">
-<div class="card-body">
-<div class="row no-gutters align-items-center">
-<div class="col mr-2">
-<div class="text-xs font-weight-bold text-success text-uppercase mb-1">Qualità aria (MQ135)</div>
-<div class="h5 mb-0 font-weight-bold text-gray-800"><?= htmlspecialchars($aria['valore'] ?? '--') ?> ppm</div>
-</div>
-<div class="col-auto"><i class="fas fa-wind fa-2x text-gray-300"></i></div>
-</div>
-</div>
-</div>
-</div>
-
-<!-- Stato aria -->
-<div class="col-xl-3 col-md-6 mb-4">
-<div class="card border-left-<?= $colore ?> shadow h-100 py-2">
-<div class="card-body">
-<div class="row no-gutters align-items-center">
-<div class="col mr-2">
-<div class="text-xs font-weight-bold text-<?= $colore ?> text-uppercase mb-1">Stato qualità aria</div>
-<div class="h5 mb-0 font-weight-bold text-gray-800"><?= $stato ?></div>
-</div>
-<div class="col-auto"><i class="fas fa-smile fa-2x text-gray-300"></i></div>
-</div>
-</div>
-</div>
-</div>
-
-</div>
+<h1 class="h3 mb-4 text-gray-800">Dashboard Sensori</h1>
 
 <div class="row">
-<div class="col-xl-12">
-<div class="card shadow mb-4">
-<div class="card-header py-3">
-<h6 class="m-0 font-weight-bold text-primary">Andamento qualità aria (MQ135)</h6>
-</div>
-<div class="card-body">
-<?php if (empty($valori)): ?>
-    <div class="text-center text-muted" style="height: 400px; display: flex; align-items: center; justify-content: center;">
-        Nessun dato disponibile per il grafico.
-    </div>
-<?php else: ?>
-    <div style="position: relative; height: 400px; width: 100%;">
-        <canvas id="airChart"></canvas>
-    </div>
-<?php endif; ?>
-</div>
-</div>
-</div>
+<div class="col-md-3"><div class="card border-left-danger shadow mb-3"><div class="card-body">Temperatura: <?= $temp['valore'] ?? '--' ?> °C</div></div></div>
+<div class="col-md-3"><div class="card border-left-primary shadow mb-3"><div class="card-body">Umidità: <?= $um['valore'] ?? '--' ?> %</div></div></div>
+<div class="col-md-3"><div class="card border-left-success shadow mb-3"><div class="card-body">Aria: <?= $aria['valore'] ?? '--' ?> ppm</div></div></div>
+<div class="col-md-3"><div class="card border-left-<?= $colore ?> shadow mb-3"><div class="card-body">Stato: <?= $stato ?></div></div></div>
 </div>
 
+<!-- Grafici Separati -->
+<div class="row mt-4">
+<div class="col-md-12"><div class="card shadow mb-3"><div class="card-header">Temperatura</div><div class="card-body"><canvas id="tempChart" style="height:200px;"></canvas></div></div></div>
+<div class="col-md-12"><div class="card shadow mb-3"><div class="card-header">Umidità</div><div class="card-body"><canvas id="umChart" style="height:200px;"></canvas></div></div></div>
+<div class="col-md-12"><div class="card shadow mb-3"><div class="card-header">Qualità Aria</div><div class="card-body"><canvas id="ariaChart" style="height:200px;"></canvas></div></div></div>
+</div>
+
+</div>
 </div>
 </div>
 
@@ -225,49 +168,42 @@ foreach($datiArr as $d){
 </footer>
 
 </div>
-<script src="vendor/jquery/jquery.min.js"></script>
-<script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-<?php if (!empty($valori)): ?>
 document.addEventListener("DOMContentLoaded", function() {
-    var canvasElement = document.getElementById("airChart");
-    if (canvasElement) {
-        var ctx = canvasElement.getContext("2d");
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: <?= json_encode($labels) ?>,
-                datasets: [{
-                    label: "Qualità aria (ppm)",
-                    data: <?= json_encode($valori) ?>,
-                    borderColor: "#1cc88a",
-                    backgroundColor: "rgba(28, 200, 138, 0.1)",
-                    fill: true,
-                    tension: 0.4,
-                    pointBackgroundColor: "#1cc88a"
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: true
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        max: 500
-                    }
-                }
-            }
-        });
-    }
+    // Temperatura
+    new Chart(document.getElementById("tempChart"), {
+        type: 'line',
+        data: {
+            labels: <?= json_encode($tempLabels) ?>,
+            datasets: [{ label: "Temperatura (°C)", data: <?= json_encode($tempValues) ?>, borderColor: "red", tension: 0.4 }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+    });
+    // Umidità
+    new Chart(document.getElementById("umChart"), {
+        type: 'line',
+        data: {
+            labels: <?= json_encode($umLabels) ?>,
+            datasets: [{ label: "Umidità (%)", data: <?= json_encode($umValues) ?>, borderColor: "blue", tension: 0.4 }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+    });
+    // Qualità Aria
+    new Chart(document.getElementById("ariaChart"), {
+        type: 'line',
+        data: {
+            labels: <?= json_encode($ariaLabels) ?>,
+            datasets: [{ label: "Qualità Aria (ppm)", data: <?= json_encode($ariaValues) ?>, borderColor: "green", tension: 0.4 }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+    });
 });
-<?php endif; ?>
 </script>
+
+<script src="vendor/jquery/jquery.min.js"></script>
+<script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
 
 </body>
 </html>
