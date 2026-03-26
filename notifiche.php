@@ -11,9 +11,8 @@ if (!isset($_SESSION['id'])) {
 require_once 'lib/conn.php';
 
 $id_utente = $_SESSION['id'];
- // https://t.me/+g6FqpxXHuQQxNWU0
 
-// Query con JOIN per avere più informazioni
+// Recupero notifiche
 $stmt = $conn->prepare("
     SELECT 
         n.id_notifica,
@@ -32,12 +31,10 @@ $stmt = $conn->prepare("
 $stmt->execute(['id_utente' => $id_utente]);
 $notifiche = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+// ================= TELEGRAM =================
+$apiToken = "7695027367:AAERhDILV39iPRRoVO3Ecpv3R2FIdlgLQXQ"; // 🔴 metti il tuo token
+$chatId = "-5171557407"; // 🔴 metti il tuo chat id
 
-
-$apiToken = "7695027367:AAERhDILV39iPRRoVO3Ecpv3R2FIdlgLQXQ";
-$chatId = "-5171557407"; // Può essere un utente, gruppo o canale
-$_SESSION['telegram_chat_id'] ?? '';
-// Funzione per inviare un messaggio Telegram
 function sendTelegramMessage($chatId, $message, $apiToken) {
     $url = "https://api.telegram.org/bot$apiToken/sendMessage";
 
@@ -54,27 +51,31 @@ function sendTelegramMessage($chatId, $message, $apiToken) {
         ],
     ];
 
-    $context  = stream_context_create($options);
+    $context = stream_context_create($options);
     file_get_contents($url, false, $context);
 }
 
-//triggeriamo l'invio del messaggio Telegram per le ultime 10 notifiche
-$recentNotifiche = array_slice($notifiche, 0, 10);
-if (!empty($recentNotifiche)) {
-    $bigMessage = "Ultime 10 notifiche:\n\n";
-    foreach ($recentNotifiche as $n) {
-        $bigMessage .= "Notifica: " . $n['testo'] . "\n" .
-                       "Dispositivo: " . $n['dispositivo'] . "\n" .
-                       "Tipo: " . $n['tipo_notifica'] . "\n" .
-                       "Evento: " . $n['dettagli'] . "\n" .
-                       "Inviata il: " . date('d/m/Y H:i', strtotime($n['timestamp_invio'])) . "\n\n";
+// INVIO SOLO SE CLICCHI IL BOTTONE
+if (isset($_GET['invia_telegram'])) {
+
+    $recentNotifiche = array_slice($notifiche, 0, 10);
+
+    if (!empty($recentNotifiche)) {
+        $bigMessage = "Ultime 10 notifiche:\n\n";
+
+        foreach ($recentNotifiche as $n) {
+            $bigMessage .= "Notifica: " . $n['testo'] . "\n" .
+                           "Dispositivo: " . $n['dispositivo'] . "\n" .
+                           "Tipo: " . $n['tipo_notifica'] . "\n" .
+                           "Evento: " . $n['dettagli'] . "\n" .
+                           "Data: " . date('d/m/Y H:i', strtotime($n['timestamp_invio'])) . "\n\n";
+        }
+
+        sendTelegramMessage($chatId, $bigMessage, $apiToken);
+
+        $messaggio = "Notifiche inviate su Telegram!";
     }
-    sendTelegramMessage($chatId, $bigMessage, $apiToken);
 }
-
-
-
-
 ?>
 
 <!DOCTYPE html>
@@ -83,14 +84,13 @@ if (!empty($recentNotifiche)) {
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Notifiche</title>
+    
 
     <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet">
     <link href="css/sb-admin-2.min.css" rel="stylesheet">
 </head>
 
 <body id="page-top">
-
 
 <div id="wrapper">
 
@@ -154,6 +154,7 @@ if (!empty($recentNotifiche)) {
                 <span>Aggiungi Dispositivo</span>
             </a>
         </li>
+
         <li class="nav-item">
             <a class="nav-link" href="misurazioni.php">
                 <i class="fas fa-chart-bar"></i>
@@ -177,14 +178,32 @@ if (!empty($recentNotifiche)) {
                 <ul class="navbar-nav ml-auto">
                     <li class="nav-item dropdown no-arrow">
                         <a class="nav-link dropdown-toggle" href="#">
-                            <a href="logout.php"><span class="mr-2 d-none d-lg-inline text-gray-600 small">Utente</span></a>
-                            <img class="img-profile rounded-circle" src="img/undraw_profile.svg">
+                            <a href="logout.php">
+                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">Utente</span>
+                            </a>
+                            <img class="img-profile rounded-circle" src="img/undraw_profile.svg" alt="Profilo Utente">
                         </a>
                     </li>
                 </ul>
             </nav>
 
-            <!-- Container -->
+            <div class="container mt-4">
+
+                
+
+                <!-- Bottone Telegram -->
+                <a href="notifiche.php?invia_telegram=1" class="btn btn-success mb-3">
+                    <i class="fab fa-telegram"></i> Invia ultime notifiche su Telegram
+                </a>
+
+                <?php if (isset($messaggio)): ?>
+                    <div class="alert alert-success">
+                        <?= htmlspecialchars($messaggio) ?>
+                    </div>
+                <?php endif; ?>
+
+            </div>
+
             <div class="container-fluid">
 
                 <div class="d-sm-flex align-items-center justify-content-between mb-4">
@@ -194,7 +213,6 @@ if (!empty($recentNotifiche)) {
                     </a>
                 </div>
 
-                <!-- Card -->
                 <div class="card shadow mb-4">
                     <div class="card-header">
                         <h6 class="m-0 font-weight-bold text-primary">
@@ -250,6 +268,7 @@ if (!empty($recentNotifiche)) {
                 </div>
 
             </div>
+
         </div>
 
         <!-- Footer -->
