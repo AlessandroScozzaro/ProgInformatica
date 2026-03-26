@@ -18,13 +18,15 @@ if (isset($_GET['id_dispositivo']) && isset($_GET['valore'])) {
         ");
         $stmt->execute([$id, $valore]);
 
-        echo "OK";
+        // 🔥 redirect alla pagina pulita (senza parametri)
+        header("Location: misurazioni.php");
+        exit;
+
     } catch (PDOException $e) {
         http_response_code(500);
-        echo "ERRORE";
+        echo "Errore DB";
+        exit;
     }
-
-    exit; // 🔴 FERMA L'HTML
 }
 
 /* =========================
