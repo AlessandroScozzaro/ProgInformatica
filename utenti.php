@@ -48,7 +48,7 @@ try {
 
         <hr class="sidebar-divider">
 
-<<<<<<< Updated upstream
+
         <li class="nav-item">
             <a class="nav-link" href="index.php">
                 <i class="fas fa-fw fa-tachometer-alt"></i>
@@ -96,15 +96,6 @@ try {
                 <span>Aggiungi Dispositivo</span>
             </a>
         </li>
-=======
-        <li class="nav-item"><a class="nav-link" href="index.php"><i class="fas fa-fw fa-tachometer-alt"></i> Dashboard</a></li>
-        <li class="nav-item"><a class="nav-link" href="stanze.php"><i class="fas fa-building"></i> Gestione Stanze</a></li>
-        <li class="nav-item"><a class="nav-link" href="piantina.php"><i class="fas fa-map"></i> Piantina</a></li>
-        <li class="nav-item active"><a class="nav-link" href="utenti.php"><i class="fas fa-users"></i> Utenti</a></li>
-        <li class="nav-item"><a class="nav-link" href="storico.php"><i class="fas fa-chart-line"></i> Storico dati</a></li>
-        <li class="nav-item"><a class="nav-link" href="notifiche.php"><i class="fas fa-bell"></i> Notifiche</a></li>
-         <li class="nav-item"><a class="nav-link" href="aggiungiDispositivo.php"><i class="fas fa-bell"></i> Aggiungi dispositivo</a></li>
->>>>>>> Stashed changes
 
         <hr class="sidebar-divider d-none d-md-block">
     </ul>
