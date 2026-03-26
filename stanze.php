@@ -1,8 +1,38 @@
 <?php
 require_once 'lib/conn.php';
 
-// Prendo tutte le stanze
-$stmt = $conn->query("SELECT * FROM stanze");
+$message = '';
+$messageType = 'info';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $nome = isset($_POST['nome']) ? trim($_POST['nome']) : '';
+    $volumetria = isset($_POST['volumetria']) ? trim($_POST['volumetria']) : '';
+
+    if ($nome === '' || $volumetria === '') {
+        $message = 'Compila tutti i campi prima di inviare.';
+        $messageType = 'danger';
+    } elseif (!is_numeric($volumetria) || floatval($volumetria) <= 0) {
+        $message = 'La volumetria deve essere un numero maggiore di 0.';
+        $messageType = 'danger';
+    } else {
+        $volumetria = floatval($volumetria);
+
+        $stmt = $conn->prepare('INSERT INTO stanze (nome, volumetria) VALUES (:nome, :volumetria)');
+        $stmt->bindValue(':nome', $nome);
+        $stmt->bindValue(':volumetria', $volumetria);
+
+        if ($stmt->execute()) {
+            $message = 'Stanza aggiunta con successo.';
+            $messageType = 'success';
+        } else {
+            $message = 'Errore durante l’aggiunta della stanza. Riprova.';
+            $messageType = 'danger';
+        }
+    }
+}
+
+// Prendo tutte le stanze (aggiornate dopo eventuale inserimento)
+$stmt = $conn->query('SELECT * FROM stanze ORDER BY nome ASC');
 $stanze = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
@@ -21,45 +51,51 @@ $stanze = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 <div class="container-fluid">
 
-<h1 class="h3 mb-4 text-gray-800">
-Gestione Stanze
-</h1>
+<h1 class="h3 mb-4 text-gray-800">Gestione Stanze</h1>
 
 <div class="card shadow mb-4">
+    <div class="card-header">Aggiungi Nuova Stanza</div>
+    <div class="card-body">
+        <?php if ($message !== ''): ?>
+            <div class="alert alert-<?= $messageType ?>">
+                <?= htmlspecialchars($message) ?>
+            </div>
+        <?php endif; ?>
 
-<div class="card-header">
-Elenco Stanze
+        <form method="post" action="stanze.php">
+            <div class="form-group">
+                <label for="nome">Nome stanza</label>
+                <input type="text" class="form-control" id="nome" name="nome" required>
+            </div>
+            <div class="form-group">
+                <label for="volumetria">Volume (m³)</label>
+                <input type="number" class="form-control" id="volumetria" name="volumetria" step="0.01" min="0.01" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Crea Stanza</button>
+        </form>
+    </div>
 </div>
 
-<div class="card-body">
-
-<table class="table table-bordered">
-
-<tr>
-<th>Nome stanza</th>
-<th>Volume (m³)</th>
-</tr>
-
-<?php foreach($stanze as $s): ?>
-<tr>
-<td><?= htmlspecialchars($s['nome']) ?></td>
-<td><?= $s['volumetria'] ?> m³</td>
-</tr>
-<?php endforeach; ?>
-
-</table>
-
-</div>
-
-</div>
-
-</div>
-
-</body>
-</html>
-
-</div>
-
+<div class="card shadow mb-4">
+    <div class="card-header">Elenco Stanze</div>
+    <div class="card-body">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Nome stanza</th>
+                    <th>Volume (m³)</th>
+                </tr>
+            </thead>
+            <tbody>
+            <?php foreach ($stanze as $s): ?>
+                <tr>
+                    <td><?= htmlspecialchars($s['nome']) ?></td>
+                    <td><?= htmlspecialchars($s['volumetria']) ?> m³</td>
+                </tr>
+            <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
 </div>
 
 </div>
