@@ -79,6 +79,12 @@ try {
                 <span>Notifiche</span>
             </a>
         </li>
+        <li class="nav-item">
+            <a class="nav-link" href="aggiungiDispositivo.php">
+                <i class="fas fa-plus"></i>
+                <span>Aggiungi Dispositivo</span>
+            </a>
+        </li>
 
         <hr class="sidebar-divider d-none d-md-block">
     </ul>
@@ -92,7 +98,7 @@ try {
                 <ul class="navbar-nav ml-auto">
                     <li class="nav-item dropdown no-arrow">
                         <a class="nav-link dropdown-toggle" href="#">
-                            <span class="mr-2 d-none d-lg-inline text-gray-600 small">Utente</span>
+                            <a href="logout.php"><span class="mr-2 d-none d-lg-inline text-gray-600 small">Utente</span></a>
                             <img class="img-profile rounded-circle" src="img/undraw_profile.svg">
                         </a>
                     </li>

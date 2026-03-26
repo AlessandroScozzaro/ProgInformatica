@@ -89,6 +89,12 @@ try {
                 <span>Notifiche</span>
             </a>
         </li>
+        <li class="nav-item">
+            <a class="nav-link" href="aggiungiDispositivo.php">
+                <i class="fas fa-plus"></i>
+                <span>Aggiungi Dispositivo</span>
+            </a>
+        </li>
 
         <hr class="sidebar-divider d-none d-md-block">
     </ul>
@@ -104,9 +110,10 @@ try {
                 </h5>
 
                 <ul class="navbar-nav ml-auto">
-                    <li class="nav-item">
-                        <a href="logout.php" class="btn btn-sm btn-danger">
-                            Logout
+                    <li class="nav-item dropdown no-arrow">
+                        <a class="nav-link dropdown-toggle" href="#">
+                            <a href="logout.php"><span class="mr-2 d-none d-lg-inline text-gray-600 small">Utente</span></a>
+                            <img class="img-profile rounded-circle" src="img/undraw_profile.svg">
                         </a>
                     </li>
                 </ul>
@@ -211,7 +218,7 @@ try {
         <!-- FOOTER -->
         <footer class="sticky-footer bg-white">
             <div class="container my-auto">
-                <div class="text-center my-auto">
+                <div class="copyright text-center my-auto">
                     <span>Progetto Monitoraggio Ambientale - 2026</span>
                 </div>
             </div>
