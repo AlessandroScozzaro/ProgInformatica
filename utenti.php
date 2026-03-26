@@ -24,7 +24,7 @@ try {
 
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
 <title>Utenti - Monitoraggio Ambientale</title>
 
@@ -48,6 +48,7 @@ try {
 
         <hr class="sidebar-divider">
 
+<<<<<<< Updated upstream
         <li class="nav-item">
             <a class="nav-link" href="index.php">
                 <i class="fas fa-fw fa-tachometer-alt"></i>
@@ -95,6 +96,15 @@ try {
                 <span>Aggiungi Dispositivo</span>
             </a>
         </li>
+=======
+        <li class="nav-item"><a class="nav-link" href="index.php"><i class="fas fa-fw fa-tachometer-alt"></i> Dashboard</a></li>
+        <li class="nav-item"><a class="nav-link" href="stanze.php"><i class="fas fa-building"></i> Gestione Stanze</a></li>
+        <li class="nav-item"><a class="nav-link" href="piantina.php"><i class="fas fa-map"></i> Piantina</a></li>
+        <li class="nav-item active"><a class="nav-link" href="utenti.php"><i class="fas fa-users"></i> Utenti</a></li>
+        <li class="nav-item"><a class="nav-link" href="storico.php"><i class="fas fa-chart-line"></i> Storico dati</a></li>
+        <li class="nav-item"><a class="nav-link" href="notifiche.php"><i class="fas fa-bell"></i> Notifiche</a></li>
+         <li class="nav-item"><a class="nav-link" href="aggiungiDispositivo.php"><i class="fas fa-bell"></i> Aggiungi dispositivo</a></li>
+>>>>>>> Stashed changes
 
         <hr class="sidebar-divider d-none d-md-block">
     </ul>
@@ -110,11 +120,16 @@ try {
                 </h5>
 
                 <ul class="navbar-nav ml-auto">
+<<<<<<< Updated upstream
                     <li class="nav-item dropdown no-arrow">
                         <a class="nav-link dropdown-toggle" href="#">
                             <a href="logout.php"><span class="mr-2 d-none d-lg-inline text-gray-600 small">Utente</span></a>
                             <img class="img-profile rounded-circle" src="img/undraw_profile.svg">
                         </a>
+=======
+                    <li class="nav-item">
+                        <a href="logout.php" class="btn btn-sm btn-danger">Logout</a>
+>>>>>>> Stashed changes
                     </li>
                 </ul>
             </nav>
@@ -122,12 +137,9 @@ try {
             <!-- CONTENUTO -->
             <div class="container-fluid">
 
-                <div class="d-sm-flex align-items-center justify-content-between mb-4">
-                    <h1 class="h3 text-gray-800">Utenti</h1>
-                </div>
+                <h1 class="h3 mb-4 text-gray-800">Utenti</h1>
 
                 <div class="card shadow mb-4">
-
                     <div class="card-header py-3">
                         <h6 class="m-0 font-weight-bold text-primary">
                             Elenco utenti registrati
@@ -135,11 +147,9 @@ try {
                     </div>
 
                     <div class="card-body">
-
                         <div class="table-responsive">
 
                             <table class="table table-bordered table-hover">
-
                                 <thead>
                                     <tr>
                                         <th>Profilo</th>
@@ -160,10 +170,13 @@ try {
 
                                             <!-- Immagine -->
                                             <td>
-                                                <?php if($u['immagine_profilo']): ?>
-                                                    <img src="PROGINFORMATICA<?= $u['immagine_profilo'] ?>" 
-                                                         width="40" height="40"
-                                                         style="border-radius:50%;">
+                                                <?php if (!empty($u['immagine_profilo'])): ?>
+                                                    <img 
+                                                        src="/ProgInformatica<?= htmlspecialchars($u['immagine_profilo']) ?>" 
+                                                        width="40" 
+                                                        height="40"
+                                                        style="border-radius:50%; object-fit:cover;"
+                                                    >
                                                 <?php else: ?>
                                                     <i class="fas fa-user-circle fa-2x"></i>
                                                 <?php endif; ?>
@@ -175,17 +188,21 @@ try {
                                             </td>
 
                                             <!-- Email -->
-                                            <td><?= htmlspecialchars($u['email']) ?></td>
+                                            <td>
+                                                <?= htmlspecialchars($u['email']) ?>
+                                            </td>
 
                                             <!-- Ruolo -->
                                             <td>
                                                 <span class="badge badge-<?= $u['ruolo'] == 'Proprietario' ? 'success' : 'secondary' ?>">
-                                                    <?= $u['ruolo'] ?>
+                                                    <?= htmlspecialchars($u['ruolo']) ?>
                                                 </span>
                                             </td>
 
                                             <!-- Telegram -->
-                                            <td><?= htmlspecialchars($u['chiave_telegram']) ?></td>
+                                            <td>
+                                                <?= htmlspecialchars($u['chiave_telegram']) ?>
+                                            </td>
 
                                         </tr>
 
@@ -202,13 +219,10 @@ try {
                                 <?php endif; ?>
 
                                 </tbody>
-
                             </table>
 
                         </div>
-
                     </div>
-
                 </div>
 
             </div>
