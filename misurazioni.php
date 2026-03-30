@@ -152,3 +152,6 @@ try {
 
 </body>
 </html>
+
+
+http://localhost/ProgInformatica/misurazioni.php?id_dispositivo=1&valore=14.00
