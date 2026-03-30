@@ -103,8 +103,6 @@ try {
                 </a>
             </li>
 
-            <hr class="sidebar-divider d-none d-md-block">
-        </ul>
 
         <!-- CONTENT -->
         <div id="content-wrapper" class="d-flex flex-column">
