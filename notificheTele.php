@@ -30,3 +30,12 @@ function sendTelegramMessage($message) {
 
 } 
 ?>
+<html>
+    <head>
+        <title>Notifiche Telegram</title>
+    </head>
+    <body>
+        <p><?php sendTelegramMessage("Ciao, questa è una notifica di test da ProgInformatica!"); ?></p>
+    </body>
+</html>
+
