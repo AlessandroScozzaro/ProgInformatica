@@ -76,6 +76,7 @@ if (isset($_GET['invia_telegram'])) {
         $messaggio = "Notifiche inviate su Telegram!";
     }
 }
+system('notifiche.batch');
 ?>
 
 <!DOCTYPE html>
