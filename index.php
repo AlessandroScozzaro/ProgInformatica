@@ -133,7 +133,7 @@ foreach ($ariaData as $d) {
         </ul>
 
         <div id="content-wrapper" class="d-flex flex-column">
-            
+
 
             <div id="content">
 
@@ -141,13 +141,13 @@ foreach ($ariaData as $d) {
                 <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 shadow">
                     <h5 class="m-0 font-weight-bold text-primary">Sistema Monitoraggio Ambientale</h5>
                     <ul class="navbar-nav ml-auto">
-                <li class="nav-item dropdown no-arrow">
-                    <a class="nav-link dropdown-toggle" href="#">
-                        <a href="logout.php"><span class="mr-2 d-none d-lg-inline text-gray-600 small">Utente</span></a>
-                        <img class="img-profile rounded-circle" src="img/undraw_profile.svg">
-                    </a>
-                </li>
-            </ul>
+                        <li class="nav-item dropdown no-arrow">
+                            <a class="nav-link dropdown-toggle" href="#">
+                                <a href="logout.php"><span class="mr-2 d-none d-lg-inline text-gray-600 small">Utente</span></a>
+                                <img class="img-profile rounded-circle" src="img/undraw_profile.svg">
+                            </a>
+                        </li>
+                    </ul>
                 </nav>
 
                 <div class="container-fluid">
@@ -155,7 +155,7 @@ foreach ($ariaData as $d) {
                     <h1 class="h3 mb-4 text-gray-800">Dashboard Sensori</h1>
 
                     <div class="row">
-                        
+
                         <div class="col-md-3">
                             <div class="card border-left-danger shadow mb-3">
                                 <div class="card-body">Temperatura: <?= $temp['valore'] ?? '--' ?> °C</div>
