@@ -10,12 +10,16 @@ require_once 'lib/conn.php';
 try {
     $query = 'SELECT id_misurazione, dispositivi.nome, valore, timestamp FROM misurazioni 
     JOIN dispositivi ON misurazioni.id_dispositivo = dispositivi.id_dispositivo';
-    if(isset($_POST['id'])){
+    if (isset($_POST['id'])) {
         $query .= 'WHERE id_misurazione = :id';
+        $stmt = $conn->prepare($query);
+        $stmt->bindParam(':id', $id);
+        $stmt->execute();
+    } else {
+        $stmt = $conn->prepare($query);
+        $stmt->execute();
     }
-    $stmt = $conn->prepare($query);
-    $stmt->bindParam(':id', $id);
-    $stmt->execute();
+
     $misurazioni = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     die('Errore query: ' . $e->getMessage());

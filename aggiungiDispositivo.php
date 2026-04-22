@@ -172,7 +172,7 @@ $dispositivi = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </div>
         <div class="form-group">
             <label for="unita_misura">Unità di Misura</label>
-            <select class="form-control" id="unita_misura" name="unita_misura" >
+            <select class="form-control" id="unita_misura" name="unita_misura" required>
                 <option value="">Seleziona Unità di Misura</option>
                 <option value="°C">°C</option>
                 <option value="%">%</option>
@@ -181,11 +181,11 @@ $dispositivi = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </div>
         <div class="form-group">
             <label for="soglia_minima">Soglia Minima</label>
-            <input type="number" class="form-control" id="soglia_minima" name="soglia_minima" step="0.01" >
+            <input type="number" class="form-control" id="soglia_minima" name="soglia_minima" step="0.01" required>
         </div>
         <div class="form-group">
             <label for="soglia_massima">Soglia Massima</label>
-            <input type="number" class="form-control" id="soglia_massima" name="soglia_massima" step="0.01" >
+            <input type="number" class="form-control" id="soglia_massima" name="soglia_massima" step="0.01" required>
         </div>
         <button type="submit" class="btn btn-primary">Modifica Dispositivo</button>
     </form>

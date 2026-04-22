@@ -28,12 +28,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $soglia_massima = floatval($soglia_massima);
 
         $stmt = $conn->prepare('INSERT INTO dispositivi (nome, id_stanza, tipo, unita_misura, soglia_minima, soglia_massima) VALUES (:nome, :id_stanza, :tipo, :unita_misura, :soglia_minima, :soglia_massima)');
-        $stmt->bindValue(':nome', $nome);
-        $stmt->bindValue(':id_stanza', $id_stanza);
-        $stmt->bindValue(':tipo', $tipo);
-        $stmt->bindValue(':unita_misura', $unita_misura);
-        $stmt->bindValue(':soglia_minima', $soglia_minima);
-        $stmt->bindValue(':soglia_massima', $soglia_massima);
+        $stmt->bindParam(':nome', $nome);
+        $stmt->bindParam(':id_stanza', $id_stanza);
+        $stmt->bindParam(':tipo', $tipo);
+        $stmt->bindParam(':unita_misura', $unita_misura);
+        $stmt->bindParam(':soglia_minima', $soglia_minima);
+        $stmt->bindParam(':soglia_massima', $soglia_massima);
 
         if ($stmt->execute()) {
             $message = 'Dispositivo aggiunto con successo.';
