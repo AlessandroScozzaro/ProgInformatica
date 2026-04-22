@@ -67,7 +67,141 @@ Piantina Stanze
 </div>
 <div class="card-body">
 
-<canvas id="mappa" width="600" height="400" style="border:1px solid #ccc;"></canvas>
+<?php
+$dbname = "prog_inf";
+$host = "127.0.0.1";
+$port = "3309";
+$username = "root";
+$password = "mysql";
+
+try {
+    $conn = new PDO(
+        "mysql:host=$host;port=$port;dbname=$dbname;charset=utf8",
+        $username,
+        $password
+    );
+    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+    // Query
+    $stanze = $conn->query("SELECT * FROM stanze")->fetchAll();
+    $dispositivi = $conn->query("
+        SELECT d.id_dispositivo, d.nome, d.id_stanza, s.nome AS stanza_nome
+        FROM dispositivi d
+        JOIN stanze s ON d.id_stanza = s.id_stanza
+    ")->fetchAll();
+
+} catch(PDOException $e) {
+    echo "Connection failed: " . $e->getMessage();
+}
+?>
+
+<style>
+.house-map {
+    display: grid;
+    grid-template-columns: repeat(4, 180px); /* Stanze più larghe */
+    grid-template-rows: repeat(3, 160px);    /* Stanze più alte */
+    gap: 15px;
+    padding: 20px;
+    background-color: #333;
+    border: 6px solid #222;
+    margin-top: 20px;
+}
+
+.room {
+    background-color: #e0e0e0;
+    border: 1px solid #aaa;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    position: relative;
+    border-radius: 8px;
+}
+
+.device {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    margin: 6px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 18px;
+    color: white;
+}
+
+.light { background-color: #f6c23e; }
+.temp  { background-color: #4e73df; }
+.air   { background-color: #1cc88a; }
+
+.tooltip {
+    visibility: hidden;
+    background-color: black;
+    color: #fff;
+    padding: 4px 6px;
+    border-radius: 5px;
+    position: absolute;
+    bottom: 110%;
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 12px;
+}
+
+.device:hover .tooltip {
+    visibility: visible;
+    opacity: 1;
+}
+</style>
+
+<div class="house-map">
+
+<?php
+// Mappa posizioni nella griglia
+$grid = [
+    "Soggiorno"       => "grid-column: 1 / 3; grid-row: 1 / 3;",
+    "Cucina"          => "grid-column: 3 / 5; grid-row: 1 / 2;",
+    "Camera da letto" => "grid-column: 3 / 4; grid-row: 2 / 4;",
+    "Bagno"           => "grid-column: 4 / 5; grid-row: 2 / 4;",
+    "Corridoio"       => "grid-column: 1 / 3; grid-row: 3 / 4;"
+];
+
+foreach ($stanze as $s) {
+    $nome = $s["nome"];
+    $style = isset($grid[$nome]) ? $grid[$nome] : "";
+    echo "<div class='room' style='$style'>$nome";
+
+    foreach ($dispositivi as $d) {
+        if ($d["stanza_nome"] == $nome) {
+
+            // Icone e colori
+            $icon = "💡";
+            $class = "light";
+
+            if (stripos($d["nome"], "temperatura") !== false) {
+                $icon = "🌡️";
+                $class = "temp";
+            }
+            if (stripos($d["nome"], "qualità") !== false) {
+                $icon = "🌬️";
+                $class = "air";
+            }
+
+            echo "
+            <div class='device $class'>
+                $icon
+                <span class='tooltip'>{$d['nome']}</span>
+            </div>";
+        }
+    }
+
+    echo "</div>";
+}
+?>
+
+
 
 </div>
 
@@ -88,27 +222,7 @@ Piantina Stanze
 <script src="vendor/jquery/jquery.min.js"></script>
 <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
 
-<script>
 
-var canvas = document.getElementById("mappa");
-var ctx = canvas.getContext("2d");
-
-ctx.fillStyle="#4e73df";
-ctx.fillRect(50,50,200,120);
-ctx.fillStyle="white";
-ctx.fillText("Laboratorio",100,120);
-
-ctx.fillStyle="#1cc88a";
-ctx.fillRect(300,50,150,120);
-ctx.fillStyle="white";
-ctx.fillText("Ufficio",340,120);
-
-ctx.fillStyle="#f6c23e";
-ctx.fillRect(150,200,250,150);
-ctx.fillStyle="white";
-ctx.fillText("Magazzino",240,280);
-
-</script>
 
 </body>
 </html>
