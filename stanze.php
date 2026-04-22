@@ -3,7 +3,10 @@ require_once 'lib/conn.php';
 
 $message = '';
 $messageType = 'info';
-
+if (isset($_SESSION['error']) && $_SESSION['error'] == "1") {
+    echo "<script>alert('Errore durante l\'aggiornamento del dispositivo.');</script>";
+    unset($_SESSION['error']);
+}
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nome = isset($_POST['nome']) ? trim($_POST['nome']) : '';
     $volumetria = isset($_POST['volumetria']) ? trim($_POST['volumetria']) : '';
@@ -110,6 +113,23 @@ $stanze = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <button type="submit" class="btn btn-primary">Crea Stanza</button>
         </form>
     </div>
+    <div class="card-body">
+    <form action="updateStanza.php" method="post">
+        <div class="form-group">
+            <label for="nome">ID</label>
+            <input type="text" class="form-control" id="id" name="id" required>
+        </div>
+        <div class="form-group">
+                <label for="nome">Nome stanza</label>
+                <input type="text" class="form-control" id="nome" name="nome" required>
+            </div>
+            <div class="form-group">
+                <label for="volumetria">Volume (m³)</label>
+                <input type="number" class="form-control" id="volumetria" name="volumetria" step="0.01" min="0.01" required>
+            </div>
+        <button type="submit" class="btn btn-primary">Modifica Stanza</button>
+    </form>
+</div>
 </div>
 
 <div class="card shadow mb-4">
