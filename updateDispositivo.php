@@ -8,8 +8,15 @@ $soglia_minima = $_POST['soglia_minima'];
 $unita_misura = $_POST['unita_misura'];
 $nome = $_POST['nome'];
 $tipo = $_POST['tipo'];
-$stmt = $conn->prepare('UPDATE dispositivi SET id_stanza = :stanza, soglia_massima = :soglia_massima, soglia_minima = :soglia_minima, unita_misura = :unita_misura, nome = :nome, tipo = :tipo WHERE id_dispositivo = :id');
+$stmt = $conn->prepare('SELECT id_stanza from stanze where nome = :stanza');
 $stmt->bindParam(':stanza', $stanza);
+$result = $stmt->execute();
+$stmt = $conn->prepare(
+    'UPDATE dispositivi 
+    SET id_stanza = :result, soglia_massima = :soglia_massima, soglia_minima = :soglia_minima, unita_misura = :unita_misura, nome = :nome, tipo = :tipo 
+    WHERE id_dispositivo = :id'
+    );
+$stmt->bindParam(':result', $result);
 $stmt->bindParam(':soglia_massima', $soglia_massima);
 $stmt->bindParam(':soglia_minima', $soglia_minima);
 $stmt->bindParam(':unita_misura', $unita_misura);
