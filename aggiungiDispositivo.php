@@ -1,6 +1,10 @@
 <?php
 require_once 'lib/conn.php';
 session_start();
+if (isset($_SESSION['error']) && $_SESSION['error'] == "1") {
+    echo "<script>alert('Errore durante l\'aggiornamento del dispositivo.');</script>";
+    unset($_SESSION['error']);
+}
 if (!isset($_SESSION['id'])) {
     header('Location: login.php');
     exit();
@@ -12,6 +16,10 @@ $messageType = isset($_GET['type']) ? $_GET['type'] : 'info';
 $result = $conn->prepare("SELECT id_stanza, nome FROM stanze");
 if ($result) {
     $result->execute();
+}
+$result2 = $conn->prepare("SELECT id_stanza, nome FROM stanze");
+if ($result2) {
+    $result2->execute();
 }
 
 // Prendo tutti i dispositivi con il nome della stanza
@@ -128,6 +136,58 @@ $dispositivi = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <input type="number" class="form-control" id="soglia_massima" name="soglia_massima" step="0.01" required>
         </div>
         <button type="submit" class="btn btn-primary">Aggiungi Dispositivo</button>
+    </form>
+</div>
+<div class="card-body">
+    <form action="updateDispositivo.php" method="post">
+        <div class="form-group">
+            <label for="nome">ID</label>
+            <input type="text" class="form-control" id="id" name="id" required>
+        </div>
+        <div class="form-group">
+            <label for="nome">Nome Dispositivo</label>
+            <input type="text" class="form-control" id="nome" name="nome" required>
+        </div>
+        <div class="form-group">
+            <label for="stanza">Stanza</label>
+            <select class="form-control" id="stanza" name="stanza" required>
+                <option value="">Seleziona Stanza</option>
+                <?php
+                if ($result2->rowCount() > 0) {
+                    while ($row = $result2->fetch()) {
+                        echo "<option value='" . $row['id_stanza'] . "'>" . $row['nome'] . "</option>";
+                    }
+                } else {
+                    echo "<option value=''>Nessuna stanza disponibile</option>";
+                }
+                ?>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="tipo">Tipo Dispositivo</label>
+            <select class="form-control" id="tipo" name="tipo" required>
+                <option value="Sensore">Sensore</option>
+                <option value="Attuatore">Attuatore</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="unita_misura">Unità di Misura</label>
+            <select class="form-control" id="unita_misura" name="unita_misura" >
+                <option value="">Seleziona Unità di Misura</option>
+                <option value="°C">°C</option>
+                <option value="%">%</option>
+                <option value="Lux">Lux</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="soglia_minima">Soglia Minima</label>
+            <input type="number" class="form-control" id="soglia_minima" name="soglia_minima" step="0.01" >
+        </div>
+        <div class="form-group">
+            <label for="soglia_massima">Soglia Massima</label>
+            <input type="number" class="form-control" id="soglia_massima" name="soglia_massima" step="0.01" >
+        </div>
+        <button type="submit" class="btn btn-primary">Modifica Dispositivo</button>
     </form>
 </div>
 </div>
