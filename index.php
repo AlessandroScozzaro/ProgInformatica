@@ -7,36 +7,54 @@ if (!isset($_SESSION['id'])) {
     exit();
 }
 
-// --- DATI SINGOLI (CARD) ---
-$temp = $conn->query("
-SELECT m.valore 
-FROM misurazioni m
-JOIN dispositivi d ON m.id_dispositivo = d.id_dispositivo
-WHERE d.nome LIKE '%temperatura%'
-ORDER BY m.timestamp DESC
-LIMIT 1
-")->fetch();
+/* ============================
+   FUNZIONI
+============================ */
+function getLatestValue($conn, $keyword) {
+    return $conn->query("
+        SELECT m.valore 
+        FROM misurazioni m
+        JOIN dispositivi d ON m.id_dispositivo = d.id_dispositivo
+        WHERE d.nome LIKE '%$keyword%'
+        ORDER BY m.timestamp DESC
+        LIMIT 1
+    ")->fetch()['valore'] ?? null;
+}
 
-$um = $conn->query("
-SELECT m.valore 
-FROM misurazioni m
-JOIN dispositivi d ON m.id_dispositivo = d.id_dispositivo
-WHERE d.nome LIKE '%umidità%'
-ORDER BY m.timestamp DESC
-LIMIT 1
-")->fetch();
+function getChartData($conn, $keyword) {
+    return $conn->query("
+        SELECT m.valore, m.timestamp, d.nome AS origine
+        FROM misurazioni m
+        JOIN dispositivi d ON m.id_dispositivo = d.id_dispositivo
+        WHERE d.nome LIKE '%$keyword%'
+        AND m.timestamp >= NOW() - INTERVAL 1 DAY
+        ORDER BY m.timestamp ASC
+        LIMIT 200
+    ")->fetchAll(PDO::FETCH_ASSOC);
+}
 
-$aria = $conn->query("
-SELECT m.valore 
-FROM misurazioni m
-JOIN dispositivi d ON m.id_dispositivo = d.id_dispositivo
-WHERE d.nome LIKE '%aria%'
-ORDER BY m.timestamp DESC
-LIMIT 1
-")->fetch();
+function getDailyAvg($conn, $keyword) {
+    return $conn->query("
+        SELECT AVG(m.valore) AS media
+        FROM misurazioni m
+        JOIN dispositivi d ON m.id_dispositivo = d.id_dispositivo
+        WHERE d.nome LIKE '%$keyword%'
+        AND m.timestamp >= NOW() - INTERVAL 1 DAY
+    ")->fetch()['media'] ?? null;
+}
 
-// Stato aria
-$valAria = $aria['valore'] ?? 0;
+/* ============================
+   VALORI SINGOLI (GET o DB)
+============================ */
+$temp = $_GET['temp'] ?? getLatestValue($conn, "temperatura");
+$um   = $_GET['um']   ?? getLatestValue($conn, "umid");
+$aria = $_GET['aria'] ?? getLatestValue($conn, "aria");
+
+/* ============================
+   STATO ARIA
+============================ */
+$valAria = floatval($aria);
+
 if ($valAria < 50) {
     $stato = "Buona";
     $colore = "success";
@@ -48,56 +66,36 @@ if ($valAria < 50) {
     $colore = "danger";
 }
 
-// --- DATI GRAFICO TEMPERATURA ---
-$tempData = $conn->query("
-SELECT m.valore, m.timestamp 
-FROM misurazioni m
-JOIN dispositivi d ON m.id_dispositivo = d.id_dispositivo
-WHERE d.nome LIKE '%temperatura%'
-ORDER BY m.timestamp ASC
-LIMIT 100
-")->fetchAll(PDO::FETCH_ASSOC);
+/* ============================
+   GRAFICI
+============================ */
+$tempData = getChartData($conn, "temperatura");
+$umData   = getChartData($conn, "umid");
+$ariaData = getChartData($conn, "aria");
 
-$tempLabels = [];
-$tempValues = [];
-foreach ($tempData as $d) {
-    $tempLabels[] = date("H:i", strtotime($d['timestamp']));
-    $tempValues[] = $d['valore'];
+function extractChart($data) {
+    $labels = [];
+    $values = [];
+    $origine = $data[0]['origine'] ?? "Sconosciuto";
+
+    foreach ($data as $d) {
+        $labels[] = date("d/m H:i", strtotime($d['timestamp']));
+        $values[] = $d['valore'];
+    }
+
+    return [$labels, $values, $origine];
 }
 
-// --- DATI GRAFICO UMIDITÀ ---
-$umData = $conn->query("
-SELECT m.valore, m.timestamp 
-FROM misurazioni m
-JOIN dispositivi d ON m.id_dispositivo = d.id_dispositivo
-WHERE d.nome LIKE '%umidità%'
-ORDER BY m.timestamp ASC
-LIMIT 100
-")->fetchAll(PDO::FETCH_ASSOC);
+list($tempLabels, $tempValues, $tempOrigine) = extractChart($tempData);
+list($umLabels, $umValues, $umOrigine)       = extractChart($umData);
+list($ariaLabels, $ariaValues, $ariaOrigine) = extractChart($ariaData);
 
-$umLabels = [];
-$umValues = [];
-foreach ($umData as $d) {
-    $umLabels[] = date("H:i", strtotime($d['timestamp']));
-    $umValues[] = $d['valore'];
-}
-
-// --- DATI GRAFICO ARIA ---
-$ariaData = $conn->query("
-SELECT m.valore, m.timestamp 
-FROM misurazioni m
-JOIN dispositivi d ON m.id_dispositivo = d.id_dispositivo
-WHERE d.nome LIKE '%aria%'
-ORDER BY m.timestamp ASC
-LIMIT 100
-")->fetchAll(PDO::FETCH_ASSOC);
-
-$ariaLabels = [];
-$ariaValues = [];
-foreach ($ariaData as $d) {
-    $ariaLabels[] = date("H:i", strtotime($d['timestamp']));
-    $ariaValues[] = $d['valore'];
-}
+/* ============================
+   MEDIE 24H
+============================ */
+$mediaTemp = round(getDailyAvg($conn, "temperatura"), 1);
+$mediaUm   = round(getDailyAvg($conn, "umid"), 1);
+$mediaAria = round(getDailyAvg($conn, "aria"), 1);
 ?>
 
 <!DOCTYPE html>
@@ -112,165 +110,125 @@ foreach ($ariaData as $d) {
 </head>
 
 <body id="page-top">
-    <div id="wrapper">
+<div id="wrapper">
 
-        <!-- Sidebar -->
-        <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion">
-            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="#">
-                <div class="sidebar-brand-icon"><i class="fas fa-microchip"></i></div>
-                <div class="sidebar-brand-text mx-3">Monitor Aria</div>
-            </a>
-            <hr class="sidebar-divider">
-            <li class="nav-item active"><a class="nav-link" href="index.php"><i class="fas fa-fw fa-tachometer-alt"></i><span>Dashboard</span></a></li>
-            <li class="nav-item"><a class="nav-link" href="stanze.php"><i class="fas fa-building"></i><span>Gestione Stanze</span></a></li>
-            <li class="nav-item"><a class="nav-link" href="piantina.php"><i class="fas fa-map"></i><span>Piantina</span></a></li>
-            <li class="nav-item"><a class="nav-link" href="utenti.php"><i class="fas fa-users"></i><span>Utenti</span></a></li>
-            <li class="nav-item"><a class="nav-link" href="storico.php"><i class="fas fa-chart-line"></i><span>Storico dati</span></a></li>
-            <li class="nav-item"><a class="nav-link" href="notifiche.php"><i class="fas fa-bell"></i><span>Notifiche</span></a></li>
-            <li class="nav-item"><a class="nav-link" href="aggiungiDispositivo.php"><i class="fas fa-plus"></i><span>Aggiungi Dispositivo</span></a></li>
-            <li class="nav-item"><a class="nav-link" href="misurazioni.php"><i class="fas fa-chart-bar"></i><span>Misurazioni</span></a></li>
-            <hr class="sidebar-divider d-none d-md-block">
-        </ul>
+<!-- Sidebar -->
+<ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion">
+    <a class="sidebar-brand d-flex align-items-center justify-content-center" href="#">
+        <div class="sidebar-brand-icon"><i class="fas fa-microchip"></i></div>
+        <div class="sidebar-brand-text mx-3">Monitor Aria</div>
+    </a>
+    <hr class="sidebar-divider">
+    <li class="nav-item active"><a class="nav-link" href="index.php"><i class="fas fa-fw fa-tachometer-alt"></i><span>Dashboard</span></a></li>
+    <li class="nav-item"><a class="nav-link" href="stanze.php"><i class="fas fa-building"></i><span>Gestione Stanze</span></a></li>
+    <li class="nav-item"><a class="nav-link" href="piantina.php"><i class="fas fa-map"></i><span>Piantina</span></a></li>
+    <li class="nav-item"><a class="nav-link" href="utenti.php"><i class="fas fa-users"></i><span>Utenti</span></a></li>
+    <li class="nav-item"><a class="nav-link" href="storico.php"><i class="fas fa-chart-line"></i><span>Storico dati</span></a></li>
+    <li class="nav-item"><a class="nav-link" href="notifiche.php"><i class="fas fa-bell"></i><span>Notifiche</span></a></li>
+    <li class="nav-item"><a class="nav-link" href="aggiungiDispositivo.php"><i class="fas fa-plus"></i><span>Aggiungi Dispositivo</span></a></li>
+    <li class="nav-item"><a class="nav-link" href="misurazioni.php"><i class="fas fa-chart-bar"></i><span>Misurazioni</span></a></li>
+    <hr class="sidebar-divider d-none d-md-block">
+</ul>
 
-        <div id="content-wrapper" class="d-flex flex-column">
+<div id="content-wrapper" class="d-flex flex-column">
+<div id="content">
 
+<nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 shadow">
+    <h5 class="m-0 font-weight-bold text-primary">Sistema Monitoraggio Ambientale</h5>
+</nav>
 
-            <div id="content">
+<div class="container-fluid">
 
-                <!-- Topbar -->
-                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 shadow">
-                    <h5 class="m-0 font-weight-bold text-primary">Sistema Monitoraggio Ambientale</h5>
-                    <ul class="navbar-nav ml-auto">
-                        <li class="nav-item dropdown no-arrow">
-                            <a class="nav-link dropdown-toggle" href="#">
-                                <a href="logout.php"><span class="mr-2 d-none d-lg-inline text-gray-600 small">Utente</span></a>
-                                <img class="img-profile rounded-circle" src="img/undraw_profile.svg">
-                            </a>
-                        </li>
-                    </ul>
-                </nav>
+<h1 class="h3 mb-4 text-gray-800">Dashboard Sensori</h1>
 
-                <div class="container-fluid">
+<!-- CARDS -->
+<div class="row">
+    <div class="col-md-3"><div class="card border-left-danger shadow mb-3"><div class="card-body">Temperatura: <?= $temp ?> °C</div></div></div>
+    <div class="col-md-3"><div class="card border-left-primary shadow mb-3"><div class="card-body">Umidità: <?= $um ?> %</div></div></div>
+    <div class="col-md-3"><div class="card border-left-success shadow mb-3"><div class="card-body">Aria: <?= $aria ?> ppm</div></div></div>
+    <div class="col-md-3"><div class="card border-left-<?= $colore ?> shadow mb-3"><div class="card-body">Stato: <?= $stato ?></div></div></div>
+</div>
 
-                    <h1 class="h3 mb-4 text-gray-800">Dashboard Sensori</h1>
+<!-- MEDIE -->
+<div class="row">
+    <div class="col-md-4"><div class="card border-left-info shadow mb-3"><div class="card-body">Media Temperatura 24h: <?= $mediaTemp ?> °C</div></div></div>
+    <div class="col-md-4"><div class="card border-left-info shadow mb-3"><div class="card-body">Media Umidità 24h: <?= $mediaUm ?> %</div></div></div>
+    <div class="col-md-4"><div class="card border-left-info shadow mb-3"><div class="card-body">Media Aria 24h: <?= $mediaAria ?> ppm</div></div></div>
+</div>
 
-                    <div class="row">
-
-                        <div class="col-md-3">
-                            <div class="card border-left-danger shadow mb-3">
-                                <div class="card-body">Temperatura: <?= $temp['valore'] ?? '--' ?> °C</div>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="card border-left-primary shadow mb-3">
-                                <div class="card-body">Umidità: <?= $um['valore'] ?? '--' ?> %</div>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="card border-left-success shadow mb-3">
-                                <div class="card-body">Aria: <?= $aria['valore'] ?? '--' ?> ppm</div>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="card border-left-<?= $colore ?> shadow mb-3">
-                                <div class="card-body">Stato: <?= $stato ?></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Grafici Separati -->
-                    <div class="row mt-4">
-                        <div class="col-md-12">
-                            <div class="card shadow mb-3">
-                                <div class="card-header">Temperatura</div>
-                                <div class="card-body"><canvas id="tempChart" style="height:200px;"></canvas></div>
-                            </div>
-                        </div>
-                        <div class="col-md-12">
-                            <div class="card shadow mb-3">
-                                <div class="card-header">Umidità</div>
-                                <div class="card-body"><canvas id="umChart" style="height:200px;"></canvas></div>
-                            </div>
-                        </div>
-                        <div class="col-md-12">
-                            <div class="card shadow mb-3">
-                                <div class="card-header">Qualità Aria</div>
-                                <div class="card-body"><canvas id="ariaChart" style="height:200px;"></canvas></div>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
+<!-- GRAFICI -->
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card shadow mb-3">
+            <div class="card-header">Temperatura (origine: <?= $tempOrigine ?>)</div>
+            <div class="card-body"><canvas id="tempChart" style="height:200px;"></canvas></div>
         </div>
-
-        <footer class="sticky-footer bg-white">
-            <div class="container my-auto">
-            </div>
-        </footer>
-
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            // Temperatura
-            new Chart(document.getElementById("tempChart"), {
-                type: 'line',
-                data: {
-                    labels: <?= json_encode($tempLabels) ?>,
-                    datasets: [{
-                        label: "Temperatura (°C)",
-                        data: <?= json_encode($tempValues) ?>,
-                        borderColor: "red",
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false
-                }
-            });
-            // Umidità
-            new Chart(document.getElementById("umChart"), {
-                type: 'line',
-                data: {
-                    labels: <?= json_encode($umLabels) ?>,
-                    datasets: [{
-                        label: "Umidità (%)",
-                        data: <?= json_encode($umValues) ?>,
-                        borderColor: "blue",
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false
-                }
-            });
-            // Qualità Aria
-            new Chart(document.getElementById("ariaChart"), {
-                type: 'line',
-                data: {
-                    labels: <?= json_encode($ariaLabels) ?>,
-                    datasets: [{
-                        label: "Qualità Aria (ppm)",
-                        data: <?= json_encode($ariaValues) ?>,
-                        borderColor: "green",
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false
-                }
-            });
-        });
-    </script>
+    <div class="col-md-12">
+        <div class="card shadow mb-3">
+            <div class="card-header">Umidità (origine: <?= $umOrigine ?>)</div>
+            <div class="card-body"><canvas id="umChart" style="height:200px;"></canvas></div>
+        </div>
+    </div>
 
-    <script src="vendor/jquery/jquery.min.js"></script>
-    <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <div class="col-md-12">
+        <div class="card shadow mb-3">
+            <div class="card-header">Qualità Aria (origine: <?= $ariaOrigine ?>)</div>
+            <div class="card-body"><canvas id="ariaChart" style="height:200px;"></canvas></div>
+        </div>
+    </div>
+</div>
+
+</div>
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+
+    new Chart(document.getElementById("tempChart"), {
+        type: 'line',
+        data: {
+            labels: <?= json_encode($tempLabels) ?>,
+            datasets: [{
+                label: "Temperatura (°C)",
+                data: <?= json_encode($tempValues) ?>,
+                borderColor: "red",
+                tension: 0.4
+            }]
+        }
+    });
+
+    new Chart(document.getElementById("umChart"), {
+        type: 'line',
+        data: {
+            labels: <?= json_encode($umLabels) ?>,
+            datasets: [{
+                label: "Umidità (%)",
+                data: <?= json_encode($umValues) ?>,
+                borderColor: "blue",
+                tension: 0.4
+            }]
+        }
+    });
+
+    new Chart(document.getElementById("ariaChart"), {
+        type: 'line',
+        data: {
+            labels: <?= json_encode($ariaLabels) ?>,
+            datasets: [{
+                label: "Qualità Aria (ppm)",
+                data: <?= json_encode($ariaValues) ?>,
+                borderColor: "green",
+                tension: 0.4
+            }]
+        }
+    });
+
+});
+</script>
 
 </body>
-
 </html>

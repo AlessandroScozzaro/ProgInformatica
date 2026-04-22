@@ -67,34 +67,6 @@ Piantina Stanze
 </div>
 <div class="card-body">
 
-<?php
-$dbname = "prog_inf";
-$host = "127.0.0.1";
-$port = "3309";
-$username = "root";
-$password = "mysql";
-
-try {
-    $conn = new PDO(
-        "mysql:host=$host;port=$port;dbname=$dbname;charset=utf8",
-        $username,
-        $password
-    );
-    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-    // Query
-    $stanze = $conn->query("SELECT * FROM stanze")->fetchAll();
-    $dispositivi = $conn->query("
-        SELECT d.id_dispositivo, d.nome, d.id_stanza, s.nome AS stanza_nome
-        FROM dispositivi d
-        JOIN stanze s ON d.id_stanza = s.id_stanza
-    ")->fetchAll();
-
-} catch(PDOException $e) {
-    echo "Connection failed: " . $e->getMessage();
-}
-?>
-
 <style>
 .house-map {
     display: grid;

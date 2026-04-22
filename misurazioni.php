@@ -1,56 +1,148 @@
+
 <?php
 require_once 'lib/conn.php';
 
 /* =========================
    API PER DISPOSITIVO
-   ========================= */
+========================= */
 if (isset($_GET['id_dispositivo']) && isset($_GET['valore'])) {
-
-    header("Content-Type: text/plain");
 
     $id = intval($_GET['id_dispositivo']);
     $valore = floatval($_GET['valore']);
 
-    try {
-        $stmt = $conn->prepare("
-            INSERT INTO misurazioni (id_dispositivo, valore)
-            VALUES (?, ?)
+    // Recupero soglie + nome
+    $stmtSoglie = $conn->prepare("
+        SELECT nome, soglia_minima, soglia_massima
+        FROM dispositivi
+        WHERE id_dispositivo = ?
+    ");
+    $stmtSoglie->execute([$id]);
+    $info = $stmtSoglie->fetch(PDO::FETCH_ASSOC);
+
+    if (!$info) exit("ERRORE: dispositivo non trovato");
+
+    // Normalizzo il nome (tolgo accenti)
+    $nomeOriginale = $info['nome'];
+    $nome = iconv('UTF-8', 'ASCII//TRANSLIT', $nomeOriginale);
+    $nome = strtolower($nome);
+
+    $sMin = $info['soglia_minima'];
+    $sMax = $info['soglia_massima'];
+
+    $fuoriSoglia = false;
+
+    // Controllo soglie
+    if ($sMax !== null && $valore > $sMax) $fuoriSoglia = true;
+    if ($sMin !== null && $valore < $sMin) $fuoriSoglia = true;
+
+    /* =========================
+       SE FUORI SOGLIA
+    ========================= */
+    if ($fuoriSoglia) {
+
+        // Evento
+        $stmtEvento = $conn->prepare("
+            INSERT INTO eventi (id_dispositivo, dettagli, timestamp)
+            VALUES (?, ?, NOW())
         ");
-        $stmt->execute([$id, $valore]);
+        $stmtEvento->execute([$id, "Valore fuori soglia: $valore"]);
 
-        // 🔥 redirect alla pagina pulita (senza parametri)
-        header("Location: misurazioni.php");
-        exit;
+        $id_evento = $conn->lastInsertId();
 
-    } catch (PDOException $e) {
-        http_response_code(500);
-        echo "Errore DB";
+        // Notifica
+        $stmtNotifica = $conn->prepare("
+            INSERT INTO notifiche (id_evento, id_utente, tipo_notifica, testo)
+            VALUES (?, 1, 'Telegram', ?)
+        ");
+        $stmtNotifica->execute([$id_evento, "Valore fuori soglia: $valore"]);
+
+        // Telegram
+       $apiToken = "7695027367:AAERhDILV39iPRRoVO3Ecpv3R2FIdlgLQXQ"; // 🔴 metti il tuo token
+$chatId = "-5171557407"; // 🔴 metti il tuo chat id
+        file_get_contents(
+            "https://api.telegram.org/bot$apiToken/sendMessage?chat_id=$chatId&text=" 
+            . urlencode("⚠️ Valore fuori soglia: $valore")
+        );
+
+        // REDIRECT CORRETTO
+        if (strpos($nome, "temperatura") !== false) {
+            header("Location: index.php?temp=$valore&alert=1");
+        } elseif (strpos($nome, "umidita") !== false) {
+            header("Location: index.php?um=$valore&alert=1");
+        } elseif (strpos($nome, "aria") !== false) {
+            header("Location: index.php?aria=$valore&alert=1");
+        }
+
         exit;
     }
+
+    /* =========================
+       SE NELLA NORMA → SALVO
+    ========================= */
+    $stmt = $conn->prepare("
+        INSERT INTO misurazioni (id_dispositivo, valore)
+        VALUES (?, ?)
+    ");
+    $stmt->execute([$id, $valore]);
+
+    // REDIRECT CORRETTO
+    if (strpos($nome, "temperatura") !== false) {
+        header("Location: index.php?temp=$valore");
+    } elseif (strpos($nome, "umidita") !== false) {
+        header("Location: index.php?um=$valore");
+    } elseif (strpos($nome, "aria") !== false) {
+        header("Location: index.php?aria=$valore");
+    }
+
+    exit;
 }
 
 /* =========================
-   PARTE WEB (UTENTE)
-   ========================= */
+   PARTE WEB (LISTA MISURAZIONI)
+========================= */
 session_start();
 if (!isset($_SESSION['id'])) {
     header('Location: login.php');
     exit();
 }
 
-try {
-    $stmt = $conn->prepare('
-        SELECT m.id_misurazione, d.nome AS dispositivo, m.valore, m.timestamp 
-        FROM misurazioni m 
-        JOIN dispositivi d ON m.id_dispositivo = d.id_dispositivo 
-        ORDER BY m.timestamp DESC
-    ');
-    $stmt->execute();
-    $misurazioni = $stmt->fetchAll(PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
-    die('Errore query: ' . $e->getMessage());
-}
+$stmt = $conn->prepare("
+    SELECT m.id_misurazione, d.nome AS dispositivo, m.valore, m.timestamp 
+    FROM misurazioni m 
+    JOIN dispositivi d ON m.id_dispositivo = d.id_dispositivo 
+    ORDER BY m.timestamp DESC
+");
+$stmt->execute();
+$misurazioni = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
+<!DOCTYPE html>
+<html lang='it'>
+<head>
+<meta charset='utf-8'>
+<title>Misurazioni</title>
+<link href='vendor/fontawesome-free/css/all.min.css' rel='stylesheet'>
+<link href='css/sb-admin-2.min.css' rel='stylesheet'>
+</head>
+<body>
+<div class='container mt-4'>
+<h2>Elenco Misurazioni</h2>
+<table class='table table-bordered'>
+<thead><tr><th>ID</th><th>Dispositivo</th><th>Valore</th><th>Timestamp</th></tr></thead>
+<tbody>
+<?php foreach ($misurazioni as $m): ?>
+<tr>
+<td><?= $m['id_misurazione'] ?></td>
+<td><?= $m['dispositivo'] ?></td>
+<td><?= $m['valore'] ?></td>
+<td><?= $m['timestamp'] ?></td>
+</tr>
+<?php endforeach; ?>
+</tbody>
+</table>
+</div>
+</body>
+</html>
+
 
 <!DOCTYPE html>
 <html lang="it">
@@ -152,5 +244,7 @@ try {
 
 </body>
 </html>
+http://localhost/proginformatica/misurazioni.php?id_dispositivo=1&valore=40
+http://localhost/proginformatica/misurazioni.php?id_dispositivo=1&valore=10
 
 
