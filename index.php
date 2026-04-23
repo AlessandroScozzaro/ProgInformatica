@@ -43,7 +43,28 @@ function getDailyAvg($conn, $keyword) {
     ")->fetch()['media'] ?? null;
 }
 
+/* ============================
+   VALORI SINGOLI (GET o DB)
+============================ */
+$temp = $_GET['temp'] ?? getLatestValue($conn, "temperatura");
+$um   = $_GET['um']   ?? getLatestValue($conn, "umid");
+$aria = $_GET['aria'] ?? getLatestValue($conn, "aria");
 
+/* ============================
+   STATO ARIA
+============================ */
+$valAria = floatval($aria);
+
+if ($valAria < 50) {
+    $stato = "Buona";
+    $colore = "success";
+} elseif ($valAria < 100) {
+    $stato = "Media";
+    $colore = "warning";
+} else {
+    $stato = "Scarsa";
+    $colore = "danger";
+}
 
 /* ============================
    GRAFICI
@@ -125,6 +146,7 @@ $mediaAria = round(getDailyAvg($conn, "aria"), 1);
     <div class="col-md-4"><div class="card border-left-info shadow mb-3"><div class="card-body">Media Temperatura 24h: <?= $mediaTemp ?> °C</div></div></div>
     <div class="col-md-4"><div class="card border-left-info shadow mb-3"><div class="card-body">Media Umidità 24h: <?= $mediaUm ?> %</div></div></div>
     <div class="col-md-4"><div class="card border-left-info shadow mb-3"><div class="card-body">Media Aria 24h: <?= $mediaAria ?> ppm</div></div></div>
+    <div class="col-md-3"><div class="card border-left-<?= $colore ?> shadow mb-3"><div class="card-body">Stato: <?= $stato ?></div></div></div>
 </div>
 
 <!-- GRAFICI -->
