@@ -76,7 +76,7 @@ if (isset($_GET['id_dispositivo']) && isset($_GET['valore'])) {
 
         $id_evento = $conn->lastInsertId();
 
-        // Notifica
+        // Notifica DB
         $stmtNotifica = $conn->prepare("
             INSERT INTO notifiche (id_evento, id_utente, tipo_notifica, testo)
             VALUES (?, 1, 'Telegram', ?)
@@ -86,14 +86,26 @@ if (isset($_GET['id_dispositivo']) && isset($_GET['valore'])) {
             "Valore fuori soglia: $valore"
         ]);
 
-        // Telegram (metti token sicuro)
-        $apiToken = "TOKEN";
-        $chatId = "CHAT_ID";
+        // ========== INVIA TELEGRAM AUTOMATICO ==========
+        $apiToken = "7695027367:AAERhDILV39iPRRoVO3Ecpv3R2FIdlgLQXQ";
+        $chatId = "-5171557407";
 
-        @file_get_contents(
-            "https://api.telegram.org/bot$apiToken/sendMessage?chat_id=$chatId&text=" 
-            . urlencode("⚠️ Valore fuori soglia: $valore")
-        );
+        $tipoAllarme = match($id_tipo) {
+            2 => "🔴 TEMPERATURA ALTA",
+            3 => "🔵 TEMPERATURA BASSA",
+            4 => "💧 UMIDITÀ ANOMALA",
+            5 => "💨 ARIA SCARSA",
+            default => "⚠️ ALLARME"
+        };
+
+        $messaggioTelegram = "<b>$tipoAllarme</b>\n\n" .
+                            "<b>Dispositivo:</b> " . htmlspecialchars($info['nome']) . "\n" .
+                            "<b>Valore:</b> $valore\n" .
+                            "<b>Soglia min:</b> $sMin\n" .
+                            "<b>Soglia max:</b> $sMax\n" .
+                            "<b>Ora:</b> " . date('d/m/Y H:i:s');
+
+        sendTelegramNotification($chatId, $messaggioTelegram, $apiToken);
     }
 
     // Redirect semplice

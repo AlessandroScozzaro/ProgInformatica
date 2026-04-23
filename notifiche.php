@@ -32,28 +32,8 @@ $stmt->execute(['id_utente' => $id_utente]);
 $notifiche = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // ================= TELEGRAM =================
-$apiToken = "7695027367:AAERhDILV39iPRRoVO3Ecpv3R2FIdlgLQXQ"; // 🔴 metti il tuo token
-$chatId = "-5171557407"; // 🔴 metti il tuo chat id
-
-function sendTelegramMessage($chatId, $message, $apiToken) {
-    $url = "https://api.telegram.org/bot$apiToken/sendMessage";
-
-    $data = [
-        'chat_id' => $chatId,
-        'text' => $message
-    ];
-
-    $options = [
-        'http' => [
-            'header'  => "Content-Type: application/x-www-form-urlencoded\r\n",
-            'method'  => 'POST',
-            'content' => http_build_query($data),
-        ],
-    ];
-
-    $context = stream_context_create($options);
-    file_get_contents($url, false, $context);
-}
+$apiToken = "7695027367:AAERhDILV39iPRRoVO3Ecpv3R2FIdlgLQXQ";
+$chatId = "-5171557407";
 
 // INVIO SOLO SE CLICCHI IL BOTTONE
 if (isset($_GET['invia_telegram'])) {
@@ -61,17 +41,17 @@ if (isset($_GET['invia_telegram'])) {
     $recentNotifiche = array_slice($notifiche, 0, 10);
 
     if (!empty($recentNotifiche)) {
-        $bigMessage = "Ultime 10 notifiche:\n\n";
+        $bigMessage = "<b>📋 Ultime 10 notifiche:</b>\n\n";
 
         foreach ($recentNotifiche as $n) {
-            $bigMessage .= "Notifica: " . $n['testo'] . "\n" .
-                           "Dispositivo: " . $n['dispositivo'] . "\n" .
-                           "Tipo: " . $n['tipo_notifica'] . "\n" .
-                           "Evento: " . $n['dettagli'] . "\n" .
-                           "Data: " . date('d/m/Y H:i', strtotime($n['timestamp_invio'])) . "\n\n";
+            $bigMessage .= "<b>Notifica:</b> " . htmlspecialchars($n['testo']) . "\n" .
+                           "<b>Dispositivo:</b> " . htmlspecialchars($n['dispositivo']) . "\n" .
+                           "<b>Tipo:</b> " . $n['tipo_notifica'] . "\n" .
+                           "<b>Evento:</b> " . htmlspecialchars($n['dettagli']) . "\n" .
+                           "<b>Data:</b> " . date('d/m/Y H:i', strtotime($n['timestamp_invio'])) . "\n\n";
         }
 
-        sendTelegramMessage($chatId, $bigMessage, $apiToken);
+        sendTelegramNotification($chatId, $bigMessage, $apiToken);
 
         $messaggio = "Notifiche inviate su Telegram!";
     }
