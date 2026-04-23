@@ -120,8 +120,6 @@ $mediaAria = round(getDailyAvg($conn, "aria"), 1);
 
 <h1 class="h3 mb-4 text-gray-800">Dashboard Sensori</h1>
 
-
-
 <!-- MEDIE -->
 <div class="row">
     <div class="col-md-4"><div class="card border-left-info shadow mb-3"><div class="card-body">Media Temperatura 24h: <?= $mediaTemp ?> °C</div></div></div>
