@@ -117,6 +117,7 @@ $misurazioni = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 
+
 <!DOCTYPE html>
 <html lang="it">
 
@@ -217,6 +218,5 @@ $misurazioni = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 </body>
 </html>
-
 
 
