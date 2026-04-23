@@ -139,12 +139,6 @@ try {
     echo "Errore database: " . $e->getMessage();
 }
 ?>
-<<<<<<< HEAD
-=======
-
-
-
->>>>>>> 02d33fc6a7050f4493956aa45a7583bf7b90fc21
 <!DOCTYPE html>
 <html lang="it">
 
