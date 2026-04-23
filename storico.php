@@ -137,26 +137,6 @@ try {
                                     <label for="nome">ID</label>
                                     <input type="text" class="form-control" id="ID" name="ID" required>
                                 </div>
-                                <div class="form-group">
-                                    <label for="tipo">Sensore</label>
-                                    <select class="form-control" id="sensore" name="sensore" required>
-                                        <option value="Sensore">Sensore</option>
-                                        <option value="Attuatore">Attuatore</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label for="unita_misura">Unità di misura</label>
-                                    <select class="form-control" id="unita_misura" name="unita_misura" required>
-                                        <option value="">Seleziona Unità di Misura</option>
-                                        <option value="°C">°C</option>
-                                        <option value="%">%</option>
-                                        <option value="Lux">Lux</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label for="soglia_minima">Valore</label>
-                                    <input type="number" class="form-control" id="valore" name="valore" required>
-                                </div>
                                 <button type="submit" class="btn btn-primary">Filtra</button>
                             </form>
                         </div>
