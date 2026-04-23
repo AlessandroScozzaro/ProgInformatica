@@ -83,7 +83,7 @@ if (isset($_GET['id_dispositivo']) && isset($_GET['valore'])) {
         ");
         $stmtNotifica->execute([
             $id_evento,
-            "Valore fuori soglia: $valore"
+            "Valore: $valore"
         ]);
 
         // ========== INVIA TELEGRAM AUTOMATICO ==========
