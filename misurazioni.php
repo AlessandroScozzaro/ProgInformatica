@@ -115,33 +115,6 @@ $stmt = $conn->prepare("
 $stmt->execute();
 $misurazioni = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
-<!DOCTYPE html>
-<html lang='it'>
-<head>
-<meta charset='utf-8'>
-<title>Misurazioni</title>
-<link href='vendor/fontawesome-free/css/all.min.css' rel='stylesheet'>
-<link href='css/sb-admin-2.min.css' rel='stylesheet'>
-</head>
-<body>
-<div class='container mt-4'>
-<h2>Elenco Misurazioni</h2>
-<table class='table table-bordered'>
-<thead><tr><th>ID</th><th>Dispositivo</th><th>Valore</th><th>Timestamp</th></tr></thead>
-<tbody>
-<?php foreach ($misurazioni as $m): ?>
-<tr>
-<td><?= $m['id_misurazione'] ?></td>
-<td><?= $m['dispositivo'] ?></td>
-<td><?= $m['valore'] ?></td>
-<td><?= $m['timestamp'] ?></td>
-</tr>
-<?php endforeach; ?>
-</tbody>
-</table>
-</div>
-</body>
-</html>
 
 
 <!DOCTYPE html>
@@ -244,7 +217,6 @@ $misurazioni = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 </body>
 </html>
-http://localhost/proginformatica/misurazioni.php?id_dispositivo=1&valore=40
-http://localhost/proginformatica/misurazioni.php?id_dispositivo=1&valore=10
+
 
 
