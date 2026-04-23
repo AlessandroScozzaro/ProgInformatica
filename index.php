@@ -120,14 +120,12 @@ $mediaAria = round(getDailyAvg($conn, "aria"), 1);
 
 <h1 class="h3 mb-4 text-gray-800">Dashboard Sensori</h1>
 
-<!-- CARDS -->
+<!-- MEDIE -->
 <div class="row">
-    <div class="col-md-3"><div class="card border-left-danger shadow mb-3"><div class="card-body">Temperatura: <?= $temp ?> °C</div></div></div>
-    <div class="col-md-3"><div class="card border-left-primary shadow mb-3"><div class="card-body">Umidità: <?= $um ?> %</div></div></div>
-    <div class="col-md-3"><div class="card border-left-success shadow mb-3"><div class="card-body">Aria: <?= $aria ?> ppm</div></div></div>
-    <div class="col-md-3"><div class="card border-left-<?= $colore ?> shadow mb-3"><div class="card-body">Stato: <?= $stato ?></div></div></div>
+    <div class="col-md-4"><div class="card border-left-info shadow mb-3"><div class="card-body">Media Temperatura 24h: <?= $mediaTemp ?> °C</div></div></div>
+    <div class="col-md-4"><div class="card border-left-info shadow mb-3"><div class="card-body">Media Umidità 24h: <?= $mediaUm ?> %</div></div></div>
+    <div class="col-md-4"><div class="card border-left-info shadow mb-3"><div class="card-body">Media Aria 24h: <?= $mediaAria ?> ppm</div></div></div>
 </div>
-
 
 <!-- GRAFICI -->
 <div class="row mt-4">
