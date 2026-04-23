@@ -7,144 +7,140 @@ if (isset($_GET['id_dispositivo']) && isset($_GET['valore'])) {
     $id = intval($_GET['id_dispositivo']);
     $valore = floatval($_GET['valore']);
 
-    // Recupero info dispositivo
-    $stmt = $conn->prepare("
+    // Recupero soglie + nome
+    $stmtSoglie = $conn->prepare("
         SELECT nome, soglia_minima, soglia_massima
         FROM dispositivi
         WHERE id_dispositivo = ?
     ");
-    $stmt->execute([$id]);
-    $info = $stmt->fetch(PDO::FETCH_ASSOC);
+    $stmtSoglie->execute([$id]);
+    $info = $stmtSoglie->fetch(PDO::FETCH_ASSOC);
 
     if (!$info) exit("ERRORE: dispositivo non trovato");
 
-    $nome = strtolower(iconv('UTF-8', 'ASCII//TRANSLIT', $info['nome']));
+    // Normalizzo il nome (tolgo accenti)
+    $nomeOriginale = $info['nome'];
+    $nome = iconv('UTF-8', 'ASCII//TRANSLIT', $nomeOriginale);
+    $nome = strtolower($nome);
+
     $sMin = $info['soglia_minima'];
     $sMax = $info['soglia_massima'];
 
     $fuoriSoglia = false;
-    $id_tipo = null;
 
-    
+    // Controllo soglie
+    if ($sMax !== null && $valore > $sMax) $fuoriSoglia = true;
+    if ($sMin !== null && $valore < $sMin) $fuoriSoglia = true;
 
-    if (strpos($nome, "temperatura") !== false) {
-        if ($sMax !== null && $valore > $sMax) {
-            $fuoriSoglia = true;
-            $id_tipo = 2; // temperatura alta
-        } elseif ($sMin !== null && $valore < $sMin) {
-            $fuoriSoglia = true;
-            $id_tipo = 3; // temperatura bassa
-        }
-    }
+    /* =========================
+       SE FUORI SOGLIA
+    ========================= */
+    if ($fuoriSoglia) {
 
-    elseif (strpos($nome, "umidita") !== false) {
-        if (($sMax !== null && $valore > $sMax) || ($sMin !== null && $valore < $sMin)) {
-            $fuoriSoglia = true;
-            $id_tipo = 4; // umidità anomala
-        }
-    }
-
-    elseif (strpos($nome, "aria") !== false) {
-        if ($sMax !== null && $valore > $sMax) {
-            $fuoriSoglia = true;
-            $id_tipo = 5; // aria scarsa
-        }
-    }
-
-   
-    $stmtMis = $conn->prepare("
-        INSERT INTO misurazioni (id_dispositivo, valore)
-        VALUES (?, ?)
-    ");
-    $stmtMis->execute([$id, $valore]);
-
-    $id_misurazione = $conn->lastInsertId();
-
-    
-    if ($fuoriSoglia && $id_tipo !== null) {
-
+        // Evento
         $stmtEvento = $conn->prepare("
-            INSERT INTO eventi (id_dispositivo, id_tipo, id_misurazione, dettagli)
-            VALUES (?, ?, ?, ?)
+            INSERT INTO eventi (id_dispositivo, dettagli, timestamp)
+            VALUES (?, ?, NOW())
         ");
-        $stmtEvento->execute([
-            $id,
-            $id_tipo,
-            $id_misurazione,
-            "Valore fuori soglia: $valore"
-        ]);
+        $stmtEvento->execute([$id, "Valore fuori soglia: $valore"]);
 
         $id_evento = $conn->lastInsertId();
 
-        // Notifica DB
+        // Notifica
         $stmtNotifica = $conn->prepare("
             INSERT INTO notifiche (id_evento, id_utente, tipo_notifica, testo)
             VALUES (?, 1, 'Telegram', ?)
         ");
-        $stmtNotifica->execute([
-            $id_evento,
-            "Valore: $valore"
-        ]);
+        $stmtNotifica->execute([$id_evento, "Valore fuori soglia: $valore"]);
 
-        // ========== INVIA TELEGRAM AUTOMATICO ==========
-        $apiToken = "7695027367:AAERhDILV39iPRRoVO3Ecpv3R2FIdlgLQXQ";
-        $chatId = "-5171557407";
+        // Telegram
+       $apiToken = "7695027367:AAERhDILV39iPRRoVO3Ecpv3R2FIdlgLQXQ"; // 🔴 metti il tuo token
+$chatId = "-5171557407"; // 🔴 metti il tuo chat id
+        file_get_contents(
+            "https://api.telegram.org/bot$apiToken/sendMessage?chat_id=$chatId&text=" 
+            . urlencode("⚠️ Valore fuori soglia: $valore")
+        );
 
-        $tipoAllarme = match($id_tipo) {
-            2 => "🔴 TEMPERATURA ALTA",
-            3 => "🔵 TEMPERATURA BASSA",
-            4 => "💧 UMIDITÀ ANOMALA",
-            5 => "💨 ARIA SCARSA",
-            default => "⚠️ ALLARME"
-        };
+        // REDIRECT CORRETTO
+        if (strpos($nome, "temperatura") !== false) {
+            header("Location: index.php?temp=$valore&alert=1");
+        } elseif (strpos($nome, "umidita") !== false) {
+            header("Location: index.php?um=$valore&alert=1");
+        } elseif (strpos($nome, "aria") !== false) {
+            header("Location: index.php?aria=$valore&alert=1");
+        }
 
-        $messaggioTelegram = "<b>$tipoAllarme</b>\n\n" .
-                            "<b>Dispositivo:</b> " . htmlspecialchars($info['nome']) . "\n" .
-                            "<b>Valore:</b> $valore\n" .
-                            "<b>Soglia min:</b> $sMin\n" .
-                            "<b>Soglia max:</b> $sMax\n" .
-                            "<b>Ora:</b> " . date('d/m/Y H:i:s');
-
-        sendTelegramNotification($chatId, $messaggioTelegram, $apiToken);
+        exit;
     }
 
-    // Redirect semplice
-    header("Location: index.php");
+    /* =========================
+       SE NELLA NORMA → SALVO
+    ========================= */
+    $stmt = $conn->prepare("
+        INSERT INTO misurazioni (id_dispositivo, valore)
+        VALUES (?, ?)
+    ");
+    $stmt->execute([$id, $valore]);
+
+    // REDIRECT CORRETTO
+    if (strpos($nome, "temperatura") !== false) {
+        header("Location: index.php?temp=$valore");
+    } elseif (strpos($nome, "umidita") !== false) {
+        header("Location: index.php?um=$valore");
+    } elseif (strpos($nome, "aria") !== false) {
+        header("Location: index.php?aria=$valore");
+    }
+
     exit;
 }
-?>
-<?php
-// =========================
-// RECUPERO MISURAZIONI
-// =========================
 
+/* =========================
+   PARTE WEB (LISTA MISURAZIONI)
+========================= */
 session_start();
 if (!isset($_SESSION['id'])) {
     header('Location: login.php');
     exit();
 }
 
-$misurazioni = [];
-
-try {
-    $stmt = $conn->prepare("
-        SELECT 
-            m.id_misurazione, 
-            d.nome AS dispositivo, 
-            m.valore, 
-            m.timestamp 
-        FROM misurazioni m
-        JOIN dispositivi d ON m.id_dispositivo = d.id_dispositivo
-        ORDER BY m.timestamp DESC
-    ");
-
-    $stmt->execute();
-    $misurazioni = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-} catch (PDOException $e) {
-    echo "Errore database: " . $e->getMessage();
-}
+$stmt = $conn->prepare("
+    SELECT m.id_misurazione, d.nome AS dispositivo, m.valore, m.timestamp 
+    FROM misurazioni m 
+    JOIN dispositivi d ON m.id_dispositivo = d.id_dispositivo 
+    ORDER BY m.timestamp DESC
+");
+$stmt->execute();
+$misurazioni = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
+<!DOCTYPE html>
+<html lang='it'>
+<head>
+<meta charset='utf-8'>
+<title>Misurazioni</title>
+<link href='vendor/fontawesome-free/css/all.min.css' rel='stylesheet'>
+<link href='css/sb-admin-2.min.css' rel='stylesheet'>
+</head>
+<body>
+<div class='container mt-4'>
+<h2>Elenco Misurazioni</h2>
+<table class='table table-bordered'>
+<thead><tr><th>ID</th><th>Dispositivo</th><th>Valore</th><th>Timestamp</th></tr></thead>
+<tbody>
+<?php foreach ($misurazioni as $m): ?>
+<tr>
+<td><?= $m['id_misurazione'] ?></td>
+<td><?= $m['dispositivo'] ?></td>
+<td><?= $m['valore'] ?></td>
+<td><?= $m['timestamp'] ?></td>
+</tr>
+<?php endforeach; ?>
+</tbody>
+</table>
+</div>
+</body>
+</html>
+
+
 <!DOCTYPE html>
 <html lang="it">
 
@@ -214,20 +210,14 @@ try {
                     </tr>
                 </thead>
                 <tbody>
-               <?php if (!empty($misurazioni)): ?>
-    <?php foreach ($misurazioni as $m): ?>
-        <tr>
-            <td><?= htmlspecialchars($m['id_misurazione']) ?></td>
-            <td><?= htmlspecialchars($m['dispositivo']) ?></td>
-            <td><?= htmlspecialchars($m['valore']) ?></td>
-            <td><?= htmlspecialchars($m['timestamp']) ?></td>
-        </tr>
-    <?php endforeach; ?>
-<?php else: ?>
-    <tr>
-        <td colspan="4">Nessuna misurazione disponibile</td>
-    </tr>
-<?php endif; ?>
+                <?php foreach ($misurazioni as $m): ?>
+                    <tr>
+                        <td><?= htmlspecialchars($m['id_misurazione']) ?></td>
+                        <td><?= htmlspecialchars($m['dispositivo']) ?></td>
+                        <td><?= htmlspecialchars($m['valore']) ?></td>
+                        <td><?= htmlspecialchars($m['timestamp']) ?></td>
+                    </tr>
+                <?php endforeach; ?>
                 </tbody>
             </table>
         </div>
@@ -251,4 +241,12 @@ try {
 
 </body>
 </html>
+http://localhost/proginformatica/misurazioni.php?id_dispositivo=1&valore=40
+http://localhost/proginformatica/misurazioni.php?id_dispositivo=1&valore=10
+
+http://localhost/proginformatica/misurazioni.php?id_dispositivo=2&valore=45
+http://localhost/proginformatica/misurazioni.php?id_dispositivo=2&valore=10
+
+http://localhost/proginformatica/misurazioni.php?id_dispositivo=5&valore=70
+http://localhost/proginformatica/misurazioni.php?id_dispositivo=5&valore=150
 
