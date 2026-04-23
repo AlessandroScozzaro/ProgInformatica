@@ -43,16 +43,12 @@ function getDailyAvg($conn, $keyword) {
     ")->fetch()['media'] ?? null;
 }
 
-/* ============================
-   VALORI SINGOLI (GET o DB)
-============================ */
+
 $temp = $_GET['temp'] ?? getLatestValue($conn, "temperatura");
 $um   = $_GET['um']   ?? getLatestValue($conn, "umid");
 $aria = $_GET['aria'] ?? getLatestValue($conn, "aria");
 
-/* ============================
-   STATO ARIA
-============================ */
+
 $valAria = floatval($aria);
 
 if ($valAria < 50) {
@@ -66,9 +62,7 @@ if ($valAria < 50) {
     $colore = "danger";
 }
 
-/* ============================
-   GRAFICI
-============================ */
+
 $tempData = getChartData($conn, "temperatura");
 $umData   = getChartData($conn, "umid");
 $ariaData = getChartData($conn, "aria");
@@ -90,9 +84,7 @@ list($tempLabels, $tempValues, $tempOrigine) = extractChart($tempData);
 list($umLabels, $umValues, $umOrigine)       = extractChart($umData);
 list($ariaLabels, $ariaValues, $ariaOrigine) = extractChart($ariaData);
 
-/* ============================
-   MEDIE 24H
-============================ */
+
 $mediaTemp = round(getDailyAvg($conn, "temperatura"), 1);
 $mediaUm   = round(getDailyAvg($conn, "umid"), 1);
 $mediaAria = round(getDailyAvg($conn, "aria"), 1);

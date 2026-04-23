@@ -25,9 +25,7 @@ if (isset($_GET['id_dispositivo']) && isset($_GET['valore'])) {
     $fuoriSoglia = false;
     $id_tipo = null;
 
-    // =========================
-    // LOGICA EVENTI CORRETTA
-    // =========================
+    
 
     if (strpos($nome, "temperatura") !== false) {
         if ($sMax !== null && $valore > $sMax) {
@@ -53,9 +51,7 @@ if (isset($_GET['id_dispositivo']) && isset($_GET['valore'])) {
         }
     }
 
-    /* =========================
-       SALVO MISURAZIONE SEMPRE
-    ========================= */
+   
     $stmtMis = $conn->prepare("
         INSERT INTO misurazioni (id_dispositivo, valore)
         VALUES (?, ?)
@@ -64,9 +60,7 @@ if (isset($_GET['id_dispositivo']) && isset($_GET['valore'])) {
 
     $id_misurazione = $conn->lastInsertId();
 
-    /* =========================
-       SE FUORI SOGLIA → EVENTO
-    ========================= */
+    
     if ($fuoriSoglia && $id_tipo !== null) {
 
         $stmtEvento = $conn->prepare("
@@ -245,5 +239,4 @@ try {
 
 </body>
 </html>
-
 
