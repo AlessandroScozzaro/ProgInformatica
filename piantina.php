@@ -1,8 +1,32 @@
 <?php
-session_start();
-if (!isset($_SESSION['id'])) {
-    header('Location: login.php');
-    exit();
+require_once 'lib/conn.php';
+
+// =========================
+// RECUPERO STANZE
+// =========================
+$stanze = [];
+try {
+    $stmt = $conn->prepare("SELECT * FROM stanze");
+    $stmt->execute();
+    $stanze = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    echo "Errore stanze: " . $e->getMessage();
+}
+
+// =========================
+// RECUPERO DISPOSITIVI
+// =========================
+$dispositivi = [];
+try {
+    $stmt = $conn->prepare("
+        SELECT d.*, s.nome AS stanza_nome
+        FROM dispositivi d
+        JOIN stanze s ON d.id_stanza = s.id_stanza
+    ");
+    $stmt->execute();
+    $dispositivi = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    echo "Errore dispositivi: " . $e->getMessage();
 }
 ?>
 
