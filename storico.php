@@ -11,7 +11,9 @@ try {
     $query = 'SELECT id_misurazione, dispositivi.nome, valore, timestamp FROM misurazioni 
     JOIN dispositivi ON misurazioni.id_dispositivo = dispositivi.id_dispositivo';
     if (isset($_POST['id'])) {
-        $query .= 'WHERE id_misurazione = :id';
+        $id = $_POST['id'];
+        $query = 'SELECT id_misurazione, dispositivi.nome, valore, timestamp FROM misurazioni 
+        JOIN dispositivi ON misurazioni.id_dispositivo = dispositivi.id_dispositivo WHERE id_misurazione = :id';
         $stmt = $conn->prepare($query);
         $stmt->bindParam(':id', $id);
         $stmt->execute();
@@ -135,7 +137,7 @@ try {
                             <form action="storico.php" method="post">
                                 <div class="form-group">
                                     <label for="nome">ID</label>
-                                    <input type="text" class="form-control" id="ID" name="ID" required>
+                                    <input type="text" class="form-control" id="id" name="id" required>
                                 </div>
                                 <button type="submit" class="btn btn-primary">Filtra</button>
                             </form>
