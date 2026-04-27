@@ -55,7 +55,7 @@ if (isset($_GET['id_dispositivo']) && isset($_GET['valore'])) {
 
         // Telegram
        $apiToken = "7695027367:AAERhDILV39iPRRoVO3Ecpv3R2FIdlgLQXQ"; // 🔴 metti il tuo token
-$chatId = "-5171557407"; // 🔴 metti il tuo chat id
+        $chatId = "-5171557407"; // 🔴 metti il tuo chat id
         file_get_contents(
             "https://api.telegram.org/bot$apiToken/sendMessage?chat_id=$chatId&text=" 
             . urlencode("⚠️ Valore fuori soglia: $valore")

@@ -41,6 +41,7 @@ if($stmt->rowCount() > 0){
     exit();
 } else {
     header("Location: login.php");
+    $_SESSION['error'] = 1;
     exit();
 }
 ?> 
